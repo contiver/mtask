@@ -908,7 +908,7 @@ mt_main(void)
 	// Inicializar driver de teclado
 	mt_kbd_init();
 	//inicializa el mouse
-	mt_mouse_init();
+	mt_mouse_init(void);
 
 	// Ejecutar primera tarea
 	while ( true )
