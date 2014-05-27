@@ -32,10 +32,11 @@ static void do_nothing(void *arg);		/* funcion de la tarea nula */
 static void clockint(unsigned irq);		/* manejador interrupcion de timer */
 
 // Stackframe inicial de una tarea
-typedef struct{
-    mt_regs_t		regs;
-    void			(*retaddr)(void);
-    void *			arg;
+typedef struct
+{
+	mt_regs_t		regs;
+	void			(*retaddr)(void);
+	void *			arg;
 }
 InitialStack_t;
 
@@ -804,12 +805,14 @@ Unatomic - habilita el modo preemptivo para la tarea actual (anidable)
 */
 
 void
-Unatomic(void){
-    if ( mt_curr_task->atomic_level && !--mt_curr_task->atomic_level ){
-        DisableInts();
-        scheduler();
-        RestoreInts();
-    }
+Unatomic(void)
+{
+	if ( mt_curr_task->atomic_level && !--mt_curr_task->atomic_level )
+	{
+		DisableInts();
+		scheduler();
+		RestoreInts();
+	}
 }
 
 /*
@@ -819,9 +822,10 @@ DisableInts - deshabilita interrupciones para la tarea actual (anidable)
 */
 
 void
-DisableInts(void){
-    if ( !mt_curr_task->disint_level++ )
-        mt_cli();
+DisableInts(void)
+{
+	if ( !mt_curr_task->disint_level++ )
+		mt_cli();
 }
 
 /*
@@ -831,9 +835,10 @@ RestoreInts - habilita interrupciones para la tarea actual (anidable)
 */
 
 void
-RestoreInts(void){
-    if ( mt_curr_task->disint_level && !--mt_curr_task->disint_level )
-        mt_sti();
+RestoreInts(void)
+{
+	if ( mt_curr_task->disint_level && !--mt_curr_task->disint_level )
+		mt_sti();
 }
 
 /*
@@ -845,9 +850,10 @@ Corre con prioridad 0 y toma la CPU cuando ninguna otra tarea pueda ejecutar.
 */
 
 static void
-do_nothing(void *arg){
-    while ( true )
-        ;
+do_nothing(void *arg)
+{
+	while ( true )
+		;
 }
 
 /*
@@ -864,50 +870,51 @@ do_nothing(void *arg){
 */
 
 void
-mt_main(void){
-    // Inicializar GDT e IDT
-    mt_setup_gdt_idt();
+mt_main(void)
+{
+	// Inicializar GDT e IDT
+	mt_setup_gdt_idt();
 
-    // Inicializar sistema de interrupciones
-    mt_setup_interrupts();
+	// Inicializar sistema de interrupciones
+	mt_setup_interrupts();
 
-    // Configurar el timer, colocar el manejador de interrupción
-    // correspondiente y habilitar la interrupción
-    mt_setup_timer(MSPERTICK);
-    mt_set_int_handler(CLOCKIRQ, clockint);
-    mt_enable_irq(CLOCKIRQ);
+	// Configurar el timer, colocar el manejador de interrupción
+	// correspondiente y habilitar la interrupción
+	mt_setup_timer(MSPERTICK);
+	mt_set_int_handler(CLOCKIRQ, clockint);
+	mt_enable_irq(CLOCKIRQ);
 
-    // Inicializar el sistema de manejo del coprocesador aritmético
-    mt_setup_math();
+	// Inicializar el sistema de manejo del coprocesador aritmético
+	mt_setup_math();
 
-    // Inicializar tarea principal
-    main_task.name = "Main Task";
-    main_task.state = TaskCurrent;
-    main_task.priority = DEFAULT_PRIO;
-    main_task.send_queue.name = main_task.name;
-    mt_curr_task = &main_task;
-    ticks_to_run = QUANTUM;
+	// Inicializar tarea principal
+	main_task.name = "Main Task";
+	main_task.state = TaskCurrent;
+	main_task.priority = DEFAULT_PRIO;
+	main_task.send_queue.name = main_task.name;
+	mt_curr_task = &main_task;
+	ticks_to_run = QUANTUM;
 
-    // Crear tarea nula y ponerla ready 
-    ready(CreateTask(do_nothing, 0, NULL, "Null Task", MIN_PRIO), false);
+	// Crear tarea nula y ponerla ready 
+	ready(CreateTask(do_nothing, 0, NULL, "Null Task", MIN_PRIO), false);
 
-    // Habilitar interrupciones
-    mt_sti();
+	// Habilitar interrupciones
+	mt_sti();
 
-    // Borrar la pantalla
-    mt_cons_clear();
-    mt_cons_cursor(true);
+	// Borrar la pantalla
+	mt_cons_clear();
+	mt_cons_cursor(true);
 
-    // Inicializar driver de teclado
-    mt_kbd_init();
-    //inicializa el mouse
-    mt_mouse_init();
+	// Inicializar driver de teclado
+	mt_kbd_init();
+	//inicializa el mouse
+	mt_mouse_init(void);
 
-    // Ejecutar primera tarea
-    while ( true )
-    {
-        cprintk(LIGHTCYAN, BLACK, "MTask inicializado.\n");
-        char *arg[] = { "shell", NULL };
-        shell_main(1, arg);
-    }
+	// Ejecutar primera tarea
+	while ( true )
+	{
+		cprintk(LIGHTCYAN, BLACK, "MTask inicializado.\n");
+		char *arg[] = { "shell", NULL };
+		shell_main(1, arg);
+	}
 }

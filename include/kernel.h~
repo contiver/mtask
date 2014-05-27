@@ -120,11 +120,6 @@ void mt_cons_nl(void);
 void mt_cons_tab(void);
 void mt_cons_bs(void);
 
-
-//mouse
-
-void mt_mouse_init(void);
-
 /* keyboard.c */ 
 
 void mt_kbd_init(void);

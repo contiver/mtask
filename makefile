@@ -4,9 +4,9 @@ NASM_FLAGS = -f elf32 -I $(INCLUDE_DIR)
 
 # kstart debe ser el primero pues debe linkearse al principio del ejecutable
 MODULES = kstart libasm interrupts kernel gdt_idt irq string sprintf malloc \
-			cons io timer queue math sem mutex monitor pipe msgqueue rand \
-			filo sfilo xfilo keyboard printk getline shell split setkb camino \
-			camino_ns atoi prodcons afilo divz
+		  cons io timer queue math sem mutex monitor pipe msgqueue rand \
+		  filo sfilo xfilo keyboard printk getline shell split setkb camino \
+		  camino_ns atoi prodcons afilo divz mouse
 
 OBJECTS = $(MODULES:%=obj/%.o)
 mtask: $(OBJECTS)
@@ -39,4 +39,4 @@ dep/%.d: src/%.asm
 	nasm $(NASM_FLAGS) $< -M -o 'obj/$*.o $@' > $@
 
 DEPS = $(MODULES:%=dep/%.d)
--include $(DEPS)
+	-include $(DEPS)
