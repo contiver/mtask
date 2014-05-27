@@ -1,3 +1,6 @@
 * Ver como "descablear" las funciones de cons.c para que impriman
   en el buffer de cada tty, en vez de directo en la zona de ram donde se 
   encuentra la VGA mapeada.
+* Averiguar si simplemente agregando tty_run a la cola de tasks basta,
+  o traerá algún problema cuando estuviese corriendo un "proceso", y hubiera
+  un cambio de contexto al tty_run

@@ -25,7 +25,8 @@ cmdtab[] ={
 };
 
 int
-shell_main(int argc, char **argv, Tty *tty){
+//shell_main(int argc, char **argv, Tty *tty){
+shell_main(int argc, char **argv){
     char buf[BUFSIZE];
     char *args[NARGS+1];
     unsigned nargs;
