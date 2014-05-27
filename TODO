@@ -1,15 +1,3 @@
-Librería de punto flotante.
-Mejoras en el alocador de memoria.
-Capa de dispositivos de caracteres.
-Driver(s) de disco.
-Capa de dispositivos de bloques.
-Capa de filesystem virtual (VFS);
-Filesystem(s) tipo standard, transaccional, con versionado, con snapshots...
-Drivers de puerto serial, paralelo, RTC. 
-Driver de Ethernet.
-Drivers de USB.
-Stack TCP/IP.
-Paginación / memoria virtual
-Verdaderos procesos (ejecutables compilados por separado con system calls).
-Librería para los ejecutables.
-Utilitarios comunes: ls, cat, ps, ping...
+* Ver como "descablear" las funciones de cons.c para que impriman
+  en el buffer de cada tty, en vez de directo en la zona de ram donde se 
+  encuentra la VGA mapeada.

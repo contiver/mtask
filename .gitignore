@@ -1,4 +1,10 @@
+*.swp
+*.iso
+*.d
+*.map
 .DS_Store
+
+# ====== Standard github C .gitignore ======
 # Object files
 *.o
 *.ko

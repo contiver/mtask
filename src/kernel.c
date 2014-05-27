@@ -32,11 +32,10 @@ static void do_nothing(void *arg);		/* funcion de la tarea nula */
 static void clockint(unsigned irq);		/* manejador interrupcion de timer */
 
 // Stackframe inicial de una tarea
-typedef struct
-{
-	mt_regs_t		regs;
-	void			(*retaddr)(void);
-	void *			arg;
+typedef struct{
+    mt_regs_t		regs;
+    void			(*retaddr)(void);
+    void *			arg;
 }
 InitialStack_t;
 
@@ -870,49 +869,47 @@ do_nothing(void *arg)
 */
 
 void
-mt_main(void)
-{
-	// Inicializar GDT e IDT
-	mt_setup_gdt_idt();
+mt_main(void){
+    // Inicializar GDT e IDT
+    mt_setup_gdt_idt();
 
-	// Inicializar sistema de interrupciones
-	mt_setup_interrupts();
+    // Inicializar sistema de interrupciones
+    mt_setup_interrupts();
 
-	// Configurar el timer, colocar el manejador de interrupción
-	// correspondiente y habilitar la interrupción
-	mt_setup_timer(MSPERTICK);
-	mt_set_int_handler(CLOCKIRQ, clockint);
-	mt_enable_irq(CLOCKIRQ);
+    // Configurar el timer, colocar el manejador de interrupción
+    // correspondiente y habilitar la interrupción
+    mt_setup_timer(MSPERTICK);
+    mt_set_int_handler(CLOCKIRQ, clockint);
+    mt_enable_irq(CLOCKIRQ);
 
-	// Inicializar el sistema de manejo del coprocesador aritmético
-	mt_setup_math();
+    // Inicializar el sistema de manejo del coprocesador aritmético
+    mt_setup_math();
 
-	// Inicializar tarea principal
-	main_task.name = "Main Task";
-	main_task.state = TaskCurrent;
-	main_task.priority = DEFAULT_PRIO;
-	main_task.send_queue.name = main_task.name;
-	mt_curr_task = &main_task;
-	ticks_to_run = QUANTUM;
+    // Inicializar tarea principal
+    main_task.name = "Main Task";
+    main_task.state = TaskCurrent;
+    main_task.priority = DEFAULT_PRIO;
+    main_task.send_queue.name = main_task.name;
+    mt_curr_task = &main_task;
+    ticks_to_run = QUANTUM;
 
-	// Crear tarea nula y ponerla ready 
-	ready(CreateTask(do_nothing, 0, NULL, "Null Task", MIN_PRIO), false);
+    // Crear tarea nula y ponerla ready 
+    ready(CreateTask(do_nothing, 0, NULL, "Null Task", MIN_PRIO), false);
 
-	// Habilitar interrupciones
-	mt_sti();
+    // Habilitar interrupciones
+    mt_sti();
 
-	// Borrar la pantalla
-	mt_cons_clear();
-	mt_cons_cursor(true);
+    // Borrar la pantalla
+    mt_cons_clear();
+    mt_cons_cursor(true);
 
-	// Inicializar driver de teclado
-	mt_kbd_init();
+    // Inicializar driver de teclado
+    mt_kbd_init();
 
-	// Ejecutar primera tarea
-	while ( true )
-	{
-		cprintk(LIGHTCYAN, BLACK, "MTask inicializado.\n");
-		char *arg[] = { "shell", NULL };
-		shell_main(1, arg);
-	}
+    // Ejecutar primera tarea
+    for(;;){
+        cprintk(LIGHTCYAN, BLACK, "MTask inicializado.\n");
+        char *arg[] = { "shell", NULL };
+        shell_main(1, arg);
+    }
 }
