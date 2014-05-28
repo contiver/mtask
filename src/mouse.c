@@ -98,20 +98,20 @@ mouseint(unsigned irq)
   //delta y negativo
   if((mouse_byte[0] | 0xFFFFFF00)==0x20){
     mouse_y-=mouse_byte[2];
-    printk("movY negativo");
+   // printk("movY negativo");
   }else{//deltaY positivo
       mouse_y+=mouse_byte[2];
-      printk("movY positivo");
+     // printk("movY positivo");
   }
 
 
   //deltaX negativo
   if((mouse_byte[0] | 0xFFFFFF00)==0x10){
     mouse_y-=mouse_byte[1];
-    printk("mov x negativo");
+   // printk("mov x negativo");
   }else{//deltaX positivo
     printk("mov x positivo");
-      mouse_y+=mouse_byte[1];
+    //  mouse_y+=mouse_byte[1];
   }
 
 }
