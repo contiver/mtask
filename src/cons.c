@@ -24,222 +24,224 @@ static bool raw;
 static unsigned scrolls;
 
 static void
-setcursor(void){
-    if (cursor_on){
-        unsigned off = cur_y * NUMCOLS + cur_x;
-        outb(CRT_ADDR, CRT_CURSOR_HIGH);
-        outb(CRT_DATA, off >> 8);
-        outb(CRT_ADDR, CRT_CURSOR_LOW);
-        outb(CRT_DATA, off);
-    }
+setcursor(void)
+{
+	if (cursor_on)
+	{
+		unsigned off = cur_y * NUMCOLS + cur_x;
+		outb(CRT_ADDR, CRT_CURSOR_HIGH);
+		outb(CRT_DATA, off >> 8);
+		outb(CRT_ADDR, CRT_CURSOR_LOW);
+		outb(CRT_DATA, off);
+	}
 }
 
 static void
-scroll(void){
-    int j;
+scroll(void)
+{
+	int j;
 
-    for (j = 1; j < NUMROWS; j++){
-        memcpy(&(focus->buf)[j - 1], &(focus->buf)[j], sizeof(row));
-        memcpy(&vidmem[j - 1], &vidmem[j], sizeof(row));
-    }
-    for (j = 0; j < NUMCOLS; j++){
-        focus->buf[NUMROWS - 1][j] = DEFATTR;
-        vidmem[NUMROWS - 1][j] = DEFATTR;
-    }
-    scrolls++;
+	for (j = 1; j < NUMROWS; j++)
+		memcpy(&vidmem[j - 1], &vidmem[j], sizeof(row));
+	for (j = 0; j < NUMCOLS; j++)
+		vidmem[NUMROWS - 1][j] = DEFATTR;
+	scrolls++;
 }
 
 static void
-put(unsigned char ch){
-    ch = (ch & 0xFF) | cur_attr;
-    (focus->buf)[cur_y][cur_x] = ch;
-    vidmem[cur_y][cur_x++] = ch;
-    if (cur_x >= NUMCOLS){
-        cur_x = 0;
-        if (cur_y == NUMROWS - 1)
-            scroll();
-        else
-            cur_y++;
-    }
-    setcursor();
+put(unsigned char ch)
+{
+	vidmem[cur_y][cur_x++] = (ch & 0xFF) | cur_attr;
+	if (cur_x >= NUMCOLS)
+	{
+		cur_x = 0;
+		if (cur_y == NUMROWS - 1)
+			scroll();
+		else
+			cur_y++;
+	}
+	setcursor();
 }
 
 /* Interfaz pública */
 
 void
-mt_reload_cons(void){
-    unsigned short *p1 = &vidmem[0][0];
-    unsigned short *p2 = &vidmem[NUMROWS][0];
-    char *p3 = &(focus->buf)[0][0];
+mt_cons_clear(void)
+{
+	unsigned short *p1 = &vidmem[0][0];
+	unsigned short *p2 = &vidmem[NUMROWS][0];
 
-    while (p1 < p2)
-        *p1++ = *p3++;
-    /* TODO cambiar este gotoxy luego al valor correcto,
-     * probablemente sea necesario llevar constancia del x e y
-     * dentro de la estructura Tty
-     */
-    mt_cons_gotoxy(0, 0);
+	while (p1 < p2)
+		*p1++ = DEFATTR;
+	mt_cons_gotoxy(0, 0);
 }
 
 void
-mt_cons_clear(void){
-    unsigned short *p1 = &vidmem[0][0];
-    unsigned short *p2 = &vidmem[NUMROWS][0];
-    char *p3 = &(focus->buf)[0][0];
+mt_cons_clreol(void)
+{
+	unsigned short *p1 = &vidmem[cur_y][cur_x];
+	unsigned short *p2 = &vidmem[cur_y + 1][0];
 
-    while (p1 < p2){
-        *p1++ = DEFATTR;
-        *p3++ = DEFATTR;
-    }
-    mt_cons_gotoxy(0, 0);
+	while (p1 < p2)
+		*p1++ = DEFATTR;
 }
 
 void
-mt_cons_clreol(void){
-    unsigned short *p1 = &vidmem[cur_y][cur_x];
-    unsigned short *p2 = &vidmem[cur_y + 1][0];
-    char *p3 = &(focus->buf)[cur_y][cur_x];
+mt_cons_clreom(void)
+{
+	unsigned short *p1 = &vidmem[cur_y][cur_x];
+	unsigned short *p2 = &vidmem[NUMROWS][0];
 
-    while (p1 < p2){
-        *p1++ = DEFATTR;
-        *p3++ = DEFATTR;
-    }
-}
-
-void
-mt_cons_clreom(void){
-    unsigned short *p1 = &vidmem[cur_y][cur_x];
-    unsigned short *p2 = &vidmem[NUMROWS][0];
-    char *p3 = &(focus->buf)[cur_y][cur_x];
-
-    while (p1 < p2){
-        *p1++ = DEFATTR;
-        *p3++ = DEFATTR;
-    }
+	while (p1 < p2)
+		*p1++ = DEFATTR;
 }
 
 unsigned
-mt_cons_nrows(void){
-    return NUMROWS;
+mt_cons_nrows(void)
+{
+	return NUMROWS;
 }
 
 unsigned
-mt_cons_ncols(void){
-    return NUMCOLS;
+mt_cons_ncols(void)
+{
+	return NUMCOLS;
 }
 
 unsigned
-mt_cons_nscrolls(void){
-    return scrolls;
+mt_cons_nscrolls(void)
+{
+	return scrolls;
 }
 
 void
-mt_cons_getxy(unsigned *x, unsigned *y){
-    *x = cur_x;
-    *y = cur_y;
+mt_cons_getxy(unsigned *x, unsigned *y)
+{
+	*x = cur_x;
+	*y = cur_y;
 }
 
 void
-mt_cons_gotoxy(unsigned x, unsigned y){
-    if (y < NUMROWS && x < NUMCOLS){
-        cur_x = x;
-        cur_y = y;
-        setcursor();
-    }
+mt_cons_gotoxy(unsigned x, unsigned y)
+{
+	if (y < NUMROWS && x < NUMCOLS)
+	{
+		cur_x = x;
+		cur_y = y;
+		setcursor();
+	}
 }
 
 void
-mt_cons_setattr(unsigned fg, unsigned bg){
-    cur_attr = ((fg & 0xF) << 8) | ((bg & 0xF) << 12);
+mt_cons_setattr(unsigned fg, unsigned bg)
+{
+	cur_attr = ((fg & 0xF) << 8) | ((bg & 0xF) << 12);
 }
 
 void
-mt_cons_getattr(unsigned *fg, unsigned *bg){
-    *fg = (cur_attr >> 8) & 0xF;
-    *bg = (cur_attr >> 12) & 0xF;
+mt_cons_getattr(unsigned *fg, unsigned *bg)
+{
+	*fg = (cur_attr >> 8) & 0xF;
+	*bg = (cur_attr >> 12) & 0xF;
 }
 
 bool
-mt_cons_cursor(bool on){
-    bool prev = cursor_on;
-    unsigned start = on ? 14 : 1, end = on ? 15 : 0;
+mt_cons_cursor(bool on)
+{
+	bool prev = cursor_on;
+	unsigned start = on ? 14 : 1, end = on ? 15 : 0;
 
-    outb(CRT_ADDR, CRT_CURSOR_START);
-    outb(CRT_DATA, start);
-    outb(CRT_ADDR, CRT_CURSOR_END);
-    outb(CRT_DATA, end);
-    cursor_on = on;
-    setcursor();
-    return prev;
+	outb(CRT_ADDR, CRT_CURSOR_START);
+	outb(CRT_DATA, start);
+	outb(CRT_ADDR, CRT_CURSOR_END);
+	outb(CRT_DATA, end);
+	cursor_on = on;
+	setcursor();
+	return prev;
 }
 
 void
-mt_cons_putc(char ch){
-    if (raw){
-        put(ch);
-        return;
-    }
+mt_cons_putc(char ch)
+{
+	if (raw)
+	{
+		put(ch);
+		return;
+	}
 
-    switch (ch){
-        case '\t':
-            mt_cons_tab();
-            break;
-        case '\r':
-            mt_cons_cr();
-            break;
-        case '\n':
-            mt_cons_nl();
-            break;
-        case BS:
-            mt_cons_bs();
-            break;
-        default:
-            put(ch);
-            break;
-    }
+	switch (ch)
+	{
+		case '\t':
+			mt_cons_tab();
+			break;
+
+		case '\r':
+			mt_cons_cr();
+			break;
+
+		case '\n':
+			mt_cons_nl();
+			break;
+
+		case BS:
+			mt_cons_bs();
+			break;
+
+		default:
+			put(ch);
+			break;
+	}
 }
 
 void
-mt_cons_puts(const char *str){
-    while (*str)
-        mt_cons_putc(*str++);
+mt_cons_puts(const char *str)
+{
+	while (*str)
+		mt_cons_putc(*str++);
 }
 
 void
-mt_cons_cr(void){
-    cur_x = 0;
-    setcursor();
+mt_cons_cr(void)
+{
+	cur_x = 0;
+	setcursor();
 }
 
 void
-mt_cons_nl(void){
-    if (cur_y == NUMROWS - 1)
-        scroll();
-    else
-        cur_y++;
-    setcursor();
+mt_cons_nl(void)
+{
+	if (cur_y == NUMROWS - 1)
+		scroll();
+	else
+		cur_y++;
+	setcursor();
 }
 
 void
-mt_cons_tab(void){
-    unsigned nspace = TABSIZE - (cur_x % TABSIZE);
-    while (nspace--)
-        put(' ');
+mt_cons_tab(void)
+{
+	unsigned nspace = TABSIZE - (cur_x % TABSIZE);
+	while (nspace--)
+		put(' ');
 }
 
 void
-mt_cons_bs(void){
-    if (cur_x) cur_x--;
-    else if (cur_y){
-        cur_y--;
-        cur_x = NUMCOLS - 1;
-    }
-    setcursor();
+mt_cons_bs(void)
+{
+	if (cur_x)
+		cur_x--;
+	else if (cur_y)
+	{
+		cur_y--;
+		cur_x = NUMCOLS - 1;
+	}
+	setcursor();
 }
 
 bool
-mt_cons_raw(bool on){
-    bool prev = raw;
-    raw = on;
-    return prev;
+mt_cons_raw(bool on)
+{
+	bool prev = raw;
+	raw = on;
+	return prev;
 }

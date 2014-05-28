@@ -1,12 +1,7 @@
+#include "tty.h"
 /* TODO mover defines en comun como NUMROWS a un .h
  * y poner el include de ese .h acá
  */
-
-struct{
-    char buf[NUMCOLS][];
-    void * data;
-    /* cola para lo del teclado */
-} Tty;
 
 void
 tty_run(void *arg){
