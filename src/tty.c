@@ -1,7 +1,9 @@
-#define VIDBUF_SIZE NUMCOLS*NUMROWS*2
+/* TODO mover defines en comun como NUMROWS a un .h
+ * y poner el include de ese .h acá
+ */
 
 struct{
-    char buf[VIDBUF_SIZE];
+    char buf[NUMCOLS][];
     void * data;
     /* cola para lo del teclado */
 } Tty;
@@ -13,9 +15,17 @@ tty_run(void *arg){
 
 void 
 initialize_tty(Tty *tty){
-    int j;
-    for(j = 0; j < VIDBUF_SIZE; j++)
-        (tty->buf)[j] = 0;
+    int row, col;
+    for(row = 0; row < NUMROWS; row++){
+        for(col = 0; col < VIDBUF_SIZE; col++)
+            (tty->buf)[row][col] = 0;
     }
     tty->data = NULL;
+}
+
+void
+switch_focus(int tty_num){
+    /* TODO: necesito un atomic() aca? */
+    focus = tty[tty_num] 
+    mt_reload_cons();
 }
