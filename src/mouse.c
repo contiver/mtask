@@ -4,13 +4,17 @@
 typedef unsigned char byte;
 typedef unsigned int dword;
 
-static void 
-mouseint(unsigned irq);
+static void mouseint(unsigned irq);
 static void mouse_wait(byte a_type);
 unsigned char mouse_write(byte a_write);
 byte mouse_read();
 
+static byte mouse_cycle=0;     //unsigned char
+signed char mouse_byte[3];    //signed char
 static int veces=1;
+signed char mouse_x=0;         //signed char
+signed char mouse_y=0;         //signed char
+
 
 static void mouse_wait(byte a_type) //unsigned char
 {
@@ -70,6 +74,25 @@ mouseint(unsigned irq)
 	//PutMsgQueueCond(scan_mq, &c);
 	printk("LLEGO interrupcion MOUSE %d \n",veces);
 	veces++;
+
+	 switch(mouse_cycle)
+  {
+    case 0:
+      mouse_byte[0]=inb(0x60);
+      mouse_cycle++;
+      break;
+    case 1:
+      mouse_byte[1]=inb(0x60);
+      mouse_cycle++;
+      break;
+    case 2:
+      mouse_byte[2]=inb(0x60);
+      mouse_x=mouse_byte[1];
+      mouse_y=mouse_byte[2];
+      mouse_cycle=0;
+      break;
+  }
+
 }
 
 //se inicializa el mouse
