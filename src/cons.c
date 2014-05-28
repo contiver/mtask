@@ -38,16 +38,22 @@ static void
 scroll(void){
     int j;
 
-    for (j = 1; j < NUMROWS; j++)
+    for (j = 1; j < NUMROWS; j++){
+        memcpy(&(focus->buf)[j - 1], &(focus->buf)[j], sizeof(row));
         memcpy(&vidmem[j - 1], &vidmem[j], sizeof(row));
-    for (j = 0; j < NUMCOLS; j++)
+    }
+    for (j = 0; j < NUMCOLS; j++){
+        focus->buf[NUMROWS - 1][j] = DEFATTR;
         vidmem[NUMROWS - 1][j] = DEFATTR;
+    }
     scrolls++;
 }
 
 static void
 put(unsigned char ch){
-    vidmem[cur_y][cur_x++] = (ch & 0xFF) | cur_attr;
+    ch = (ch & 0xFF) | cur_attr;
+    (focus->buf)[cur_y][cur_x] = ch;
+    vidmem[cur_y][cur_x++] = ch;
     if (cur_x >= NUMCOLS){
         cur_x = 0;
         if (cur_y == NUMROWS - 1)
@@ -61,12 +67,30 @@ put(unsigned char ch){
 /* Interfaz pública */
 
 void
+mt_reload_cons(void){
+    unsigned short *p1 = &vidmem[0][0];
+    unsigned short *p2 = &vidmem[NUMROWS][0];
+    char *p3 = &(focus->buf)[0][0];
+
+    while (p1 < p2)
+        *p1++ = *p3++;
+    /* TODO cambiar este gotoxy luego al valor correcto,
+     * probablemente sea necesario llevar constancia del x e y
+     * dentro de la estructura Tty
+     */
+    mt_cons_gotoxy(0, 0);
+}
+
+void
 mt_cons_clear(void){
     unsigned short *p1 = &vidmem[0][0];
     unsigned short *p2 = &vidmem[NUMROWS][0];
+    char *p3 = &(focus->buf)[0][0];
 
-    while (p1 < p2)
+    while (p1 < p2){
         *p1++ = DEFATTR;
+        *p3++ = DEFATTR;
+    }
     mt_cons_gotoxy(0, 0);
 }
 
@@ -74,18 +98,24 @@ void
 mt_cons_clreol(void){
     unsigned short *p1 = &vidmem[cur_y][cur_x];
     unsigned short *p2 = &vidmem[cur_y + 1][0];
+    char *p3 = &(focus->buf)[cur_y][cur_x];
 
-    while (p1 < p2)
+    while (p1 < p2){
         *p1++ = DEFATTR;
+        *p3++ = DEFATTR;
+    }
 }
 
 void
 mt_cons_clreom(void){
     unsigned short *p1 = &vidmem[cur_y][cur_x];
     unsigned short *p2 = &vidmem[NUMROWS][0];
+    char *p3 = &(focus->buf)[cur_y][cur_x];
 
-    while (p1 < p2)
+    while (p1 < p2){
         *p1++ = DEFATTR;
+        *p3++ = DEFATTR;
+    }
 }
 
 unsigned
@@ -154,19 +184,15 @@ mt_cons_putc(char ch){
         case '\t':
             mt_cons_tab();
             break;
-
         case '\r':
             mt_cons_cr();
             break;
-
         case '\n':
             mt_cons_nl();
             break;
-
         case BS:
             mt_cons_bs();
             break;
-
         default:
             put(ch);
             break;
@@ -203,10 +229,8 @@ mt_cons_tab(void){
 
 void
 mt_cons_bs(void){
-    if (cur_x)
-        cur_x--;
-    else if (cur_y)
-    {
+    if (cur_x) cur_x--;
+    else if (cur_y){
         cur_y--;
         cur_x = NUMCOLS - 1;
     }

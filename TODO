@@ -4,3 +4,6 @@
 * Averiguar si simplemente agregando tty_run a la cola de tasks basta,
   o traerá algún problema cuando estuviese corriendo un "proceso", y hubiera
   un cambio de contexto al tty_run
+* En tty.c : mover defines en comun como NUMROWS a un .h
+  y poner el include de ese .h en tty.c
+

@@ -4,10 +4,10 @@ Tty *tty[TTYS_NUM];
 Tty *focus;
 
 void 
-setup_ttys(void){
+mt_setup_ttys(void){
     int i, j;
     char buf[2];
-    char name[] = "tty ";
+    char name[] = {'t', 't', 'y', 0, 0}; 
     for(i = 0; i < TTYS_NUM; i++){
         tty[i] = malloc(sizeof Tty);
         initialize_tty(tty[i]);
