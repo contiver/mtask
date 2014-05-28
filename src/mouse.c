@@ -72,7 +72,7 @@ mouseint(unsigned irq)
 	// Interrupción de mouse.
 	//unsigned c = inb(MOUSE);
 	//PutMsgQueueCond(scan_mq, &c);
-	printk("LLEGO interrupcion MOUSE %d \n",veces);
+	//printk("LLEGO interrupcion MOUSE %d \n",veces);
 	veces++;
 
 	 switch(mouse_cycle)
@@ -91,6 +91,27 @@ mouseint(unsigned irq)
       mouse_y=mouse_byte[2];
       mouse_cycle=0;
       break;
+  }
+
+
+
+  //delta y negativo
+  if((mouse_byte[0] | 0xFFFFFF00)==0x20){
+    mouse_y-=mouse_byte[2];
+    printk("movY negativo");
+  }else{//deltaY positivo
+      mouse_y+=mouse_byte[2];
+      printk("movY positivo");
+  }
+
+
+  //deltaX negativo
+  if((mouse_byte[0] | 0xFFFFFF00)==0x10){
+    mouse_y-=mouse_byte[1];
+    printk("mov x negativo");
+  }else{//deltaX positivo
+    printk("mov x positivo");
+      mouse_y+=mouse_byte[1];
   }
 
 }
