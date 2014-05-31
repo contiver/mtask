@@ -5,9 +5,13 @@
 #include "segments.h"
 
 //constantes de la pantalla de video
-#define NUMROWS 25
+#define NUMROWS 24
 #define NUMCOLS 80
 #define VIDMEM 0xB8000
+typedef unsigned short row[NUMCOLS];
+ extern row *vidmem ;
+
+
 /* gdt_idt.c */
 
 void mt_setup_gdt_idt(void);
@@ -124,6 +128,9 @@ void mt_cons_nl(void);
 void mt_cons_tab(void);
 void mt_cons_bs(void);
 
+// funcion que imprime la barra superior en la que se encuentra los botones para seleccionar las consolas con el mouse. 
+//tambien se encarga de mover el puntero al comienzo de la memoria de vide(vidmem) para que la barra superior quede fija arriba.
+void mt_printMainBar(void);
 
 //mouse
 

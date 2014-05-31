@@ -7,6 +7,8 @@
 #define MSPERTICK 		20				/* 50 Hz */
 #define QUANTUM			2				/* 40 mseg */
 
+
+
 Task_t * volatile mt_curr_task;			/* tarea en ejecucion */
 Task_t * volatile mt_last_task;			/* tarea anterior */
 Task_t * volatile mt_fpu_task;			/* tarea que tiene el coprocesador */
@@ -903,14 +905,8 @@ mt_main(void){
     //inicializa el mouse
     mt_mouse_init();
     //se carga la barra principal
-    //void printMainBar(void);//NO ANDA, PREGUNTAR
-    //ESTO DE ACA DEBERIA ESTAR EN PRINT MAINBAR
-    printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA 4 \n");
     
-	printk("_________________________ \n");
-
-
-
+   mt_printMainBar();
 
     // Ejecutar primera tarea
     while ( true )

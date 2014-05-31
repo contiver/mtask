@@ -15,12 +15,26 @@
 
 #define BS 0x08
 
-typedef unsigned short row[NUMCOLS];
-static row *vidmem = (row *) VIDMEM;
+row *vidmem = (row *) VIDMEM;
 static unsigned cur_x, cur_y, cur_attr = DEFATTR;
 static bool cursor_on = true;
 static bool raw;
 static unsigned scrolls;
+
+
+
+void mt_printMainBar(void){
+		
+	 printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA 4 \n");
+    
+	//printk("_________________________ \n");
+	
+	vidmem=&(vidmem[2]);//se cambia el puntero a memoria 
+	
+
+		}
+
+
 
 static void
 setcursor(void)

@@ -28,7 +28,7 @@ typedef unsigned int dword;
 //color original de donde se encontraba el mouse
 static unsigned char  originalBackColour=BLACK;
 
-unsigned char WriteCharacter( unsigned char backcolour, int x, int y);
+unsigned char WriteCharacter( unsigned char backcolour, int x, int y, int x_prev, int y_prev);
 #define MOUSE_PRIO			10000		// Alta prioridad, para que funcione como "bottom half" de la interrupción
 #define MOUSE_BUFSIZE		32
 static byte mouse_cycle=0;     //unsigned char
@@ -36,9 +36,11 @@ unsigned char mouse_byte[3];    //signed char
 
 static  int mouse_x=0;         //signed char
 static  int mouse_y=0;         //signed char
+static  int mouse_x_prev=0;         //valor previo de x
+static  int mouse_y_prev=0;         //valor previo de y 
 
 //funcion que cambia el fondo de una posicion de memoria
-unsigned char WriteCharacter(  unsigned char backcolour, int x, int y)
+unsigned char WriteCharacter(  unsigned char backcolour, int x, int y, int x_prev, int y_prev)
 {	unsigned char c;
 	unsigned char forecolour;
 	
@@ -99,9 +101,14 @@ mouse_int(unsigned irq)
 
 
 			      //delta y negativo
+			mouse_y_prev=mouse_y;		
+			    	
 			  if((mouse_byte[0] & 0x20)==0x20){
-			    if(mouse_y<NUMROWS)
-			    	mouse_y+=mouse_byte[2];
+			    if(mouse_y<NUMROWS){
+				mouse_y+=mouse_byte[2];
+
+
+					}
 			    	//mouse_y=(mouse_y<0)?0:mouse_y;
 			    	mouse_y=(mouse_y<NUMROWS)?mouse_y:(NUMROWS-1);
 			   // printk("movY negativo\n");
@@ -115,6 +122,8 @@ mouse_int(unsigned irq)
 
 
 			unsigned char aux=mouse_byte[1];
+			mouse_x_prev=mouse_x;		
+			    	
 			  //deltaX negativo
 			  if((mouse_byte[0] & 0x10)==0x10){
 
@@ -140,7 +149,7 @@ mouse_int(unsigned irq)
 			     
 			  }
 			  //si se movio el mouse, se marca la nueva posicion
-			  if(mouse_byte[2]!=0 || mouse_byte[1]!=0)  			
+			  if(mouse_x!=mouse_x_prev |mouse_y!=mouse_y_prev )  			
 			  	WriteCharacter( LIGHTRED, 0, 0);
 	  //printk("X: %d Y: %d. \n", mouse_x, mouse_y);
 
