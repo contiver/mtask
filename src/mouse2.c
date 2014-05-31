@@ -28,7 +28,7 @@ typedef unsigned int dword;
 //color original de donde se encontraba el mouse
 static unsigned char  originalBackColour=BLACK;
 
-unsigned char WriteCharacter( unsigned char forecolour, unsigned char backcolour, int x, int y);
+unsigned char WriteCharacter( unsigned char backcolour, int x, int y);
 #define MOUSE_PRIO			10000		// Alta prioridad, para que funcione como "bottom half" de la interrupción
 #define MOUSE_BUFSIZE		32
 static byte mouse_cycle=0;     //unsigned char
@@ -38,17 +38,26 @@ static  int mouse_x=0;         //signed char
 static  int mouse_y=0;         //signed char
 
 //funcion que cambia el fondo de una posicion de memoria
-unsigned char WriteCharacter( unsigned char forecolour, unsigned char backcolour, int x, int y)
+unsigned char WriteCharacter(  unsigned char backcolour, int x, int y)
 {	unsigned char c;
-
-     short attrib = (backcolour << 4) | (forecolour & 0x0F);
-     volatile short * where;
+	unsigned char forecolour;
+	
+	volatile short * where;
      where = (volatile short *)VIDMEM + (y * 80 + x) ;
-     short aux=*where;//se guarda una copia del caracter y su color originales
+     
+     
+     
+     short aux=*where;//se guarda una copia del caracter y sus colores originales
      c=(unsigned char) (aux&0x0ff);
+    
+    forecolour=(unsigned char)((c>>8) &0xf);
+     
+    originalBackColour=(unsigned char)((c>>8) &0xf0);
+     //printk("color de fondo original %d\n",originalBackColour );
+     //se graba el nuevo color de fondo
+     short attrib = (backcolour << 4) | (forecolour & 0x0F);
      *where = c | (attrib << 8);
-     unsigned char originalBackColour=(unsigned char)((c>>8) &0xf);
-     printk("color de fondo original %d\n",originalForecolour );
+     
      return originalBackColour; 
 }
 
@@ -130,8 +139,9 @@ mouse_int(unsigned irq)
 			      //printk("desplazamiento positivo en %u unidades \n",aux);
 			     
 			  }
-	  	
-			  WriteCharacter( WHITE, LIGHTRED, 0, 0);
+			  //si se movio el mouse, se marca la nueva posicion
+			  if(mouse_byte[2]!=0 || mouse_byte[1]!=0)  			
+			  	WriteCharacter( LIGHTRED, 0, 0);
 	  //printk("X: %d Y: %d. \n", mouse_x, mouse_y);
 
 
@@ -216,7 +226,7 @@ init_mouse(void)
 	mouse_send_ctl(MOUSE_CMD);
 	mouse_send(MOUSE_ENASTREAM);
 	mouse_receive(NULL, true);		// ignoramos la respuesta
-	printk("posicion inicial x: %u",mouse_x);
+	//printk("posicion inicial x: %u",mouse_x);
 }
 
 
@@ -232,3 +242,17 @@ mt_mouse_init(void)
 	mt_enable_irq(MOUSE_INT);
 }
 
+
+void printMainBar(void){
+
+
+	printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA 4 \n");
+	// int i;
+	// char * str=Malloc(NUMCOLS+1);
+	// for( i=0;i<NUMCOLS;i++){
+	// 	str[i]="_";
+	// }
+	// str[NUMCOLS]=0;
+	// printk("%s \n",str);
+	return;
+}

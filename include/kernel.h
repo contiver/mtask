@@ -128,6 +128,7 @@ void mt_cons_bs(void);
 //mouse
 
 void mt_mouse_init(void);
+void printMainBar(void);
 
 /* keyboard.c */ 
 

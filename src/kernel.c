@@ -902,6 +902,15 @@ mt_main(void){
     mt_kbd_init();
     //inicializa el mouse
     mt_mouse_init();
+    //se carga la barra principal
+    //void printMainBar(void);//NO ANDA, PREGUNTAR
+    //ESTO DE ACA DEBERIA ESTAR EN PRINT MAINBAR
+    printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA 4 \n");
+    
+	printk("_________________________ \n");
+
+
+
 
     // Ejecutar primera tarea
     while ( true )

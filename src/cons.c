@@ -1,6 +1,6 @@
 #include "kernel.h"
 
-#define VIDMEM 0xB8000
+
 
 #define TABSIZE 8
 
