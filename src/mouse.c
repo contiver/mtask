@@ -10,10 +10,10 @@ unsigned char mouse_write(byte a_write);
 byte mouse_read();
 
 static byte mouse_cycle=0;     //unsigned char
-signed char mouse_byte[3];    //signed char
+unsigned char mouse_byte[3];    //signed char
 static int veces=1;
-signed char mouse_x=0;         //signed char
-signed char mouse_y=0;         //signed char
+static signed char mouse_x=0;         //signed char
+static signed char mouse_y=0;         //signed char
 
 
 static void mouse_wait(byte a_type) //unsigned char
@@ -96,23 +96,24 @@ mouseint(unsigned irq)
 
 
   //delta y negativo
-  if((mouse_byte[0] | 0xFFFFFF00)==0x20){
+  if((mouse_byte[0] & 0x20)==0x20){
     mouse_y-=mouse_byte[2];
-   // printk("movY negativo");
+    //printk("movY negativo\n");
   }else{//deltaY positivo
       mouse_y+=mouse_byte[2];
-     // printk("movY positivo");
+      //printk("movY positivo\n");
   }
 
 
   //deltaX negativo
-  if((mouse_byte[0] | 0xFFFFFF00)==0x10){
+  if((mouse_byte[0] & 0x10)==0x10){
     mouse_y-=mouse_byte[1];
-   // printk("mov x negativo");
+    //printk("mov x negativo\n");
   }else{//deltaX positivo
-    printk("mov x positivo");
-    //  mouse_y+=mouse_byte[1];
+    //printk("mov x positivo\n");
+      //mouse_y+=mouse_byte[1];
   }
+  printk("X: %d Y: %d. \n", mouse_x, mouse_y);
 
 }
 
