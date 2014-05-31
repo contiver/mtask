@@ -4,6 +4,9 @@
 #include "mtask.h"
 #include "segments.h"
 
+//constantes de la pantalla de video
+#define NUMROWS 25
+#define NUMCOLS 80
 /* gdt_idt.c */
 
 void mt_setup_gdt_idt(void);
@@ -119,6 +122,11 @@ void mt_cons_cr(void);
 void mt_cons_nl(void);
 void mt_cons_tab(void);
 void mt_cons_bs(void);
+
+
+//mouse
+
+void mt_mouse_init(void);
 
 /* keyboard.c */ 
 

@@ -4,6 +4,9 @@
 #include "mtask.h"
 #include "segments.h"
 
+//constantes de la pantalla de video
+#define NUMROWS 25
+#define NUMCOLS 80
 /* gdt_idt.c */
 
 void mt_setup_gdt_idt(void);

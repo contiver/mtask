@@ -1,8 +1,7 @@
 #include "kernel.h"
 
 #define VIDMEM 0xB8000
-#define NUMROWS 25
-#define NUMCOLS 80
+
 #define TABSIZE 8
 
 #define CRT_ADDR 0x3D4
