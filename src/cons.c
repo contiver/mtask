@@ -29,7 +29,7 @@ void mt_printMainBar(void){
     
 	//printk("_________________________ \n");
 	
-	vidmem=&(vidmem[2]);//se cambia el puntero a memoria 
+	vidmem=&(vidmem[1]);//se cambia el puntero a memoria 
 	
 
 		}
@@ -41,7 +41,7 @@ setcursor(void)
 {
 	if (cursor_on)
 	{
-		unsigned off = cur_y * NUMCOLS + cur_x;
+		unsigned off = (cur_y+1) * NUMCOLS + cur_x;
 		outb(CRT_ADDR, CRT_CURSOR_HIGH);
 		outb(CRT_DATA, off >> 8);
 		outb(CRT_ADDR, CRT_CURSOR_LOW);

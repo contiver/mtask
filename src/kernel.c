@@ -907,6 +907,8 @@ mt_main(void){
     //se carga la barra principal
     
    mt_printMainBar();
+	//se setea hace visible el mouse en la posicion inicial
+	 WriteCharacter();
 
     // Ejecutar primera tarea
     while ( true )

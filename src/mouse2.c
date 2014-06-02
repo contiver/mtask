@@ -1,4 +1,9 @@
+//basado en el codigo del profesor Hugo y en la pagina http://forum.osdev.org/viewtopic.php?t=10247
+
+
+
 #include <kernel.h>
+#include <mtask.h>
 //falla al mover el mouse a la izquierda, se mueve 255 posiciones de golpe siempre
 
 // Definiciones del controlador de mouse PS/2
@@ -26,47 +31,65 @@ typedef unsigned char byte;
 typedef unsigned int dword;
 
 //color original de donde se encontraba el mouse
-static unsigned char  originalBackColour=BLACK;
+static short  originalCharacter;
 
 void WriteCharacter( unsigned char backcolour);
 #define MOUSE_PRIO			10000		// Alta prioridad, para que funcione como "bottom half" de la interrupción
 #define MOUSE_BUFSIZE		32
-static byte mouse_cycle=0;     //unsigned char
+static char mouse_cycle=0;     //unsigned char
 unsigned char mouse_byte[3];    //signed char
 
 static  int mouse_x=0;         //signed char
 static  int mouse_y=0;         //signed char
 static  int mouse_x_prev=0;         //valor previo de x
 static  int mouse_y_prev=0;         //valor previo de y 
+static bool initialPosition=true;
 
 //funcion que cambia el fondo de una posicion de memoria
 void WriteCharacter(  unsigned char backcolour)
 {	unsigned char c;
-	unsigned char forecolour;
+	unsigned char cprev;
+	 unsigned char forecolour;
 	
-	if(mouse_x!=mouse_x_prev || mouse_y!=mouse_y_prev )
+	if(mouse_x!=mouse_x_prev || mouse_y!=mouse_y_prev ||initialPosition)
 			{
-
+		/*
 			//devolver color anterior
 			volatile short * prev=(volatile short *)VIDMEM + (mouse_y_prev * 80 + mouse_x_prev) ;
-			unsigned char forecolourprev=(unsigned char) (((*prev)&0x0ff)>>8 &0xf);		
-			short attribprev = (  originalBackColour<< 4) | ( forecolourprev & 0x0F);
-			 *prev = (unsigned char) ((*prev)&0x0ff) | (attribprev << 8);
+			
+			short prev_value=*prev;//valor previo incluyendo colores y atributos de color
+			cprev=prev_value;//caracter anterior			
+			//unsigned char forecolourprev=(prev_value>>8)&0x0f;
+			
+
+			printk("forecolour previo %d \n",originalForeColour);
+			short attribprev=( originalBackColour<< 4) | (originalForeColour & 0x0F);
+
+			 *prev = cprev | (attribprev << 8);
 						
 
-
-
-			volatile short * where;
+	*/
+	volatile short * prev=(volatile short *)VIDMEM + (mouse_y_prev * 80 + mouse_x_prev) ;
+	volatile short * where;//nueva posicion
 		     where = (volatile short *)VIDMEM + (mouse_y * 80 + mouse_x) ;
+	if(!initialPosition){
+			*prev=originalCharacter;
+			//initialPosition=false;
+			printk("entro en no initial pos\n");
+		}		
+		initialPosition=false;
+			
+		//SE PINTA LA NUEVA POSICION
+			
 		     
 		     
-		     
+		     originalCharacter=*where;
 		     short aux=*where;//se guarda una copia del caracter y sus colores originales
 		     c=(unsigned char) (aux&0x0ff);
 		    
 		    forecolour=(unsigned char)((c>>8) &0xf);
-		     
-		    originalBackColour=(unsigned char)((c>>8) &0xf0);
+		     //originalForeColour=forecolour;
+		    //originalBackColour=(unsigned char)((c>>8) &0xf0);//se guarda el color de fondo  de la nueva posicion actual
 		     //printk("color de fondo original %d\n",originalBackColour );
 		     //se graba el nuevo color de fondo
 		     short attrib = (backcolour << 4) | (forecolour & 0x0F);
@@ -100,6 +123,7 @@ mouse_int(unsigned irq)
       mouse_cycle++;
       break;
     case 2:{
+
 		      mouse_byte[2]=inb(0x60);
 		      //mouse_x=mouse_byte[1];
 		      //mouse_y=mouse_byte[2];
@@ -109,7 +133,15 @@ mouse_int(unsigned irq)
 		      if (mouse_byte[0] & 0x1)
       				printk("Left button is pressed!\n");
 			     
+			int delta_y = mouse_byte[2];
+			if ( mouse_byte[0] & 0x20 )
+				delta_y -= 256; 
 
+			int delta_x = mouse_byte[1];
+			if ( mouse_byte[0] & 0x10 )
+				delta_x -= 256; 
+
+//printk("dx %d dy %d\n", delta_x, delta_y);
 
 
 
@@ -117,24 +149,24 @@ mouse_int(unsigned irq)
 			mouse_y_prev=mouse_y;		
 			    	
 			  if((mouse_byte[0] & 0x20)==0x20){
-			    if(mouse_y<NUMROWS){
-				mouse_y+=mouse_byte[2];
+			    if(mouse_y<ABSROWS){
+				mouse_y-=delta_y;
 
 
 					}
 			    	//mouse_y=(mouse_y<0)?0:mouse_y;
-			    	mouse_y=(mouse_y<NUMROWS)?mouse_y:(NUMROWS-1);
+			    	mouse_y=(mouse_y<ABSROWS)?mouse_y:(ABSROWS-1);
 			   // printk("movY negativo\n");
 			  }else{//deltaY positivo
 			  		if(mouse_y>0)
-			     		 mouse_y-=mouse_byte[2];
+			     		 mouse_y-=delta_y;
 			     	mouse_y=(mouse_y<0)?0:mouse_y;
 			     // printk("movY positivo\n");
 			  }
 
 
 
-			unsigned char aux=mouse_byte[1];
+			//unsigned char aux=mouse_byte[1];
 			mouse_x_prev=mouse_x;		
 			    	
 			  //deltaX negativo
@@ -144,7 +176,7 @@ mouse_int(unsigned irq)
 			   if(mouse_x>0){
 
 
-			    	mouse_x=mouse_x-aux;
+			    	mouse_x=mouse_x+delta_x;
 			    	//printk("se decrementa x en %u\n",aux);
 			   		}
 			    mouse_x=(mouse_x<0)?0:mouse_x;
@@ -156,13 +188,14 @@ mouse_int(unsigned irq)
 			    //printk("mov x positivo\n");
 			    	
 			      if(mouse_x<NUMCOLS)//solo incrementa mientras no se pase de los limites de la pantalla
-			      	mouse_x=mouse_x+aux;
+			      	mouse_x=mouse_x+delta_x;
 			      mouse_x=(mouse_x>=NUMCOLS)?(NUMCOLS-1):mouse_x;
 			      //printk("desplazamiento positivo en %u unidades \n",aux);
 			     
 			  }
 			  //si se movio el mouse, se marca la nueva posicion
-			  WriteCharacter( LIGHTRED);
+			  
+			WriteCharacter( LIGHTRED);//DESCOMENTAR ESTO!!!!
 	  //printk("X: %d Y: %d. \n", mouse_x, mouse_y);
 
 

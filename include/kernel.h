@@ -5,7 +5,8 @@
 #include "segments.h"
 
 //constantes de la pantalla de video
-#define NUMROWS 24
+#define ABSROWS 25// filas totales, solo accesibles para el mouse
+#define NUMROWS 24//disponibles para las consolas,no incluye barra superior
 #define NUMCOLS 80
 #define VIDMEM 0xB8000
 typedef unsigned short row[NUMCOLS];
@@ -137,6 +138,8 @@ void mt_printMainBar(void);
 void mt_mouse_init(void);
 void printMainBar(void);
 
+
+void setInitialPosition(void);
 /* keyboard.c */ 
 
 void mt_kbd_init(void);
