@@ -2,6 +2,7 @@
 #define MTASK_H_INCLUDED
 
 #include "lib.h"
+#include "tty.h"
 
 #define MIN_PRIO		0
 #define DEFAULT_PRIO	50
@@ -66,7 +67,8 @@ struct Task_t
 	Task_t *		from;
 	void *			msg;
 	unsigned 		size;
-	TaskQueue_t 	send_queue;
+	TaskQueue_t 		send_queue;
+	Tty * 			ttyp;
 };
 
 typedef void (*TaskFunc_t)(void *arg);
