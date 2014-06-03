@@ -22,11 +22,9 @@ static Tty *focus;
 
 
 void mt_printMainBar(void){
-		
-	printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA 4 \n");
+    printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA 4 \n");
     //printk("_________________________ \n");
-	vidmem=&(vidmem[2]);//se cambia el puntero a memoria 
-	
+    vidmem = &(vidmem[1]);//se cambia el puntero a memoria 
 }
 
 
@@ -34,7 +32,7 @@ void mt_printMainBar(void){
 static void
 setcursor(Tty * ttyp){
     if (ttyp->cursor_on){
-        unsigned off = ttyp->cur_y * NUMCOLS + ttyp->cur_x;
+        unsigned off = (ttyp->cur_y+1) * NUMCOLS + ttyp->cur_x;
         outb(CRT_ADDR, CRT_CURSOR_HIGH);
         outb(CRT_DATA, off >> 8);
         outb(CRT_ADDR, CRT_CURSOR_LOW);
@@ -44,7 +42,7 @@ setcursor(Tty * ttyp){
 
 static void
 scroll(void){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     int j;
 
     for (j = 1; j < NUMROWS; j++){
@@ -53,34 +51,33 @@ scroll(void){
     for (j = 0; j < NUMCOLS; j++){
         ttyp->buf[NUMROWS - 1][j] = DEFATTR;
     }
+    ttyp->scrolls++;
     if(focus == ttyp){
         for (j = 1; j < NUMROWS; j++)
             memcpy(&vidmem[j - 1], &vidmem[j], sizeof(row));
         for (j = 0; j < NUMROWS; j++)
             vidmem[NUMROWS - 1][j] = DEFATTR;
     }
-    ttyp->scrolls++;
 }
 
 static void
 put(unsigned char ch){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     ch = (ch & 0xFF) | (ttyp->cur_attr);
 
     (ttyp->buf)[ttyp->cur_y][ttyp->cur_x] = ch;
     if(focus == ttyp){
-        /*TODO todo esto estaba afuera del if, si llega a fallar
-         * chequear si efectivamente iba todo adentro! */
         vidmem[ttyp->cur_y][ttyp->cur_x++] = ch;
-        if (ttyp->cur_x >= NUMCOLS){
-            ttyp->cur_x = 0;
-            if (ttyp->cur_y == NUMROWS - 1)
-                scroll();
-            else
-                ttyp->cur_y++;
-        }
-        setcursor(ttyp);
     }
+    if (ttyp->cur_x >= NUMCOLS){
+        ttyp->cur_x = 0;
+        if (ttyp->cur_y == NUMROWS - 1)
+            scroll();
+        else
+            ttyp->cur_y++;
+    }
+    setcursor(ttyp);
+
 }
 
 /* Interfaz pública */
@@ -103,7 +100,7 @@ mt_reload_cons(){
 void
 mt_cons_clear(void){
 
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     unsigned short *p1 = &vidmem[0][0];
     unsigned short *p2 = &vidmem[NUMROWS][0];
     unsigned short *p3 = &(ttyp->buf)[0][0];
@@ -117,7 +114,7 @@ mt_cons_clear(void){
 
 void
 mt_cons_clreol(void){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     unsigned short *p1 = &vidmem[ttyp->cur_y][ttyp->cur_x];
     unsigned short *p2 = &vidmem[ttyp->cur_y + 1][0];
     unsigned short *p3 = &(ttyp->buf)[ttyp->cur_y][ttyp->cur_x];
@@ -130,7 +127,7 @@ mt_cons_clreol(void){
 
 void
 mt_cons_clreom(void){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     unsigned short *p1 = &vidmem[ttyp->cur_y][ttyp->cur_x];
     unsigned short *p2 = &vidmem[NUMROWS][0];
     unsigned short *p3 = &(ttyp->buf)[ttyp->cur_y][ttyp->cur_x];
@@ -153,20 +150,20 @@ mt_cons_ncols(void){
 
 unsigned
 mt_cons_nscrolls(void){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     return ttyp->scrolls;
 }
 
 void
 mt_cons_getxy(unsigned *x, unsigned *y){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     *x = ttyp->cur_x;
     *y = ttyp->cur_y;
 }
 
 void
 mt_cons_gotoxy(unsigned x, unsigned y){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     if (y < NUMROWS && x < NUMCOLS){
         ttyp->cur_x = x;
         ttyp->cur_y = y;
@@ -176,20 +173,20 @@ mt_cons_gotoxy(unsigned x, unsigned y){
 
 void
 mt_cons_setattr(unsigned fg, unsigned bg){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     ttyp->cur_attr = ((fg & 0xF) << 8) | ((bg & 0xF) << 12);
 }
 
 void
 mt_cons_getattr(unsigned *fg, unsigned *bg){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     *fg = (ttyp->cur_attr >> 8) & 0xF;
     *bg = (ttyp->cur_attr >> 12) & 0xF;
 }
 
 bool
 mt_cons_cursor(bool on){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     bool prev = ttyp->cursor_on;
     unsigned start = on ? 14 : 1, end = on ? 15 : 0;
 
@@ -230,21 +227,21 @@ mt_cons_putc(char ch){
 
 void
 mt_cons_puts(const char *str){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     while (*str)
         mt_cons_putc(*str++);
 }
 
 void
 mt_cons_cr(void){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     ttyp->cur_x = 0;
     setcursor(ttyp);
 }
 
 void
 mt_cons_nl(void){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     if (ttyp->cur_y == NUMROWS - 1)
         scroll();
     else
@@ -254,7 +251,7 @@ mt_cons_nl(void){
 
 void
 mt_cons_tab(void){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     unsigned nspace = TABSIZE - (ttyp->cur_x % TABSIZE);
     while (nspace--)
         put(' ');
@@ -262,7 +259,7 @@ mt_cons_tab(void){
 
 void
 mt_cons_bs(void){
-	Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = CurrentTask()->ttyp;
     if (ttyp->cur_x) ttyp->cur_x--;
     else if (ttyp->cur_y){
         ttyp->cur_y--;
@@ -319,10 +316,10 @@ mt_setup_ttys(void){
     for(i = 0; i < TTYS_NUM; i++){
         tty[i] = Malloc(sizeof(Tty));
         initialize_tty(tty[i]);
-       // itoa(i, buf, 10);
+        // itoa(i, buf, 10);
         /* TODO esta bien pasarle i (un int) como parametro de tty_run, cuyo
          * prototipo dice recibir void* ? */
-       // Ready(CreateTask(tty_run, 0, tty[i], strcat(name, buf), DEFAULT_PRIO));
+        // Ready(CreateTask(tty_run, 0, tty[i], strcat(name, buf), DEFAULT_PRIO));
     }
     focus = *tty;
     // Borrar la pantalla
