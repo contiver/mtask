@@ -27,8 +27,6 @@ void mt_printMainBar(void){
     vidmem = &(vidmem[1]);//se cambia el puntero a memoria 
 }
 
-
-
 static void
 setcursor(Tty * ttyp){
     if (ttyp->cursor_on){
