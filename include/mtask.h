@@ -2,7 +2,7 @@
 #define MTASK_H_INCLUDED
 
 #include "lib.h"
-#include "tty.h"
+//#include "kernel.h"
 
 #define MIN_PRIO		0
 #define DEFAULT_PRIO	50
@@ -19,6 +19,20 @@
 #ifndef min
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
+
+/* TODO borrar despues, codigo repetido!
+ */
+#define NUMROWS 24//disponibles para las consolas,no incluye barra superior
+#define NUMCOLS 80
+typedef struct{
+    void *key_mq;
+    unsigned short buf[NUMROWS][NUMCOLS];
+    void * data;
+    unsigned cur_x, cur_y, cur_attr;
+    unsigned scrolls;
+   // bool cursor_on;
+    int cursor_on;
+} Tty;
 
 typedef enum { false, true } bool;
 
@@ -67,7 +81,7 @@ struct Task_t
 	Task_t *		from;
 	void *			msg;
 	unsigned 		size;
-	TaskQueue_t 		send_queue;
+	TaskQueue_t     send_queue;
 	Tty * 			ttyp;
 };
 
@@ -234,5 +248,6 @@ bool				PutMsgQueue(MsgQueue_t *mq, void *msg);
 bool				PutMsgQueueCond(MsgQueue_t *mq, void *msg);
 bool				PutMsgQueueTimed(MsgQueue_t *mq, void *msg, unsigned msecs);
 unsigned			AvailMsgQueue(MsgQueue_t *mq);
+
 
 #endif

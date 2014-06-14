@@ -3,16 +3,17 @@
 
 #include "mtask.h"
 #include "segments.h"
-#include "tty.h"
+
 // TODO VER DONDE VAN ESTOS DEFINE, SEGURO ESTAN REPETIDOS!
 //constantes de la pantalla de video
+
 #define NUMROWS 24//disponibles para las consolas,no incluye barra superior
 #define NUMCOLS 80
 #define ABSROWS NUMROWS+1// filas totales, solo accesibles para el mouse
 #define VIDMEM 0xB8000
 
 typedef unsigned short row[NUMCOLS];
- extern row *vidmem ;
+extern row *vidmem ;
 
 
 /* gdt_idt.c */
@@ -141,6 +142,8 @@ void printMainBar(void);
 
 
 void setInitialPosition(void);
+void turnOffMouse();
+void turnOnMouse();
 /* keyboard.c */ 
 
 void mt_kbd_init(void);

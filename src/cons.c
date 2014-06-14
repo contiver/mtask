@@ -1,3 +1,4 @@
+#include "mtask.h"
 #include "kernel.h"
 #include "apps.h"
 
@@ -41,6 +42,7 @@ static void
 scroll(void){
     Tty *ttyp = CurrentTask()->ttyp;
     int j;
+	turnOffMouse(); // se apaga el mouse para no alterar las lineas que se desplazan
 
     for (j = 1; j < NUMROWS; j++){
         memcpy(&(ttyp->buf)[j - 1], &(ttyp->buf)[j], sizeof(row));
@@ -55,6 +57,7 @@ scroll(void){
         for (j = 0; j < NUMROWS; j++)
             vidmem[NUMROWS - 1][j] = DEFATTR;
     }
+	turnOnMouse();
 }
 
 static void
@@ -123,8 +126,7 @@ mt_cons_clreol(void){
 
 void
 mt_cons_clreom(void){
-    Tty *ttyp = CurrentTask()->ttyp;
-    unsigned short *p1 = &vidmem[ttyp->cur_y][ttyp->cur_x];
+    Tty *ttyp = CurrentTask()->ttyp; unsigned short *p1 = &vidmem[ttyp->cur_y][ttyp->cur_x];
     unsigned short *p2 = &vidmem[NUMROWS][0];
     unsigned short *p3 = &(ttyp->buf)[ttyp->cur_y][ttyp->cur_x];
 
