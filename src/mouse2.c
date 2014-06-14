@@ -33,8 +33,6 @@ typedef unsigned int dword;
 //color original de donde se encontraba el mouse
 static short  originalCharacter;
 
-void WriteCharacter( unsigned char backcolour);
-void detectClickOnBar();
 
 #define MOUSE_PRIO			10000		// Alta prioridad, para que funcione como "bottom half" de la interrupción
 #define MOUSE_BUFSIZE		32
@@ -48,6 +46,15 @@ static  int mouse_y_prev=0;         //valor previo de y
 static bool initialPosition=true;
 
 typedef enum{OFF, ON} state;
+
+
+void WriteCharacter( unsigned char backcolour);
+void detectClickOnBar();
+void clearAllTabs();
+void turnOnOFFTab(state s,int i);
+
+
+
 
 //funcion que apaga mouse de la pantalla, no modifica internamente la posicion en la que esta
 void turnOffMouse(){
@@ -70,7 +77,7 @@ void turnOnOFFTab(state s,int i){
 	unsigned char c;
 	unsigned char caracter;
 	int start, end;
-	unsigned char forecolour;
+	unsigned char forecolour=LIGHTGRAY;
 	unsigned char backcolour;
 	
 	
@@ -78,16 +85,16 @@ void turnOnOFFTab(state s,int i){
 	//seccion donde se determinan los colores segun se quiere encender o apagar pestaña
 	switch (s){
 				case OFF:{
-						forecolour=WHITE;
+						
 						backcolour=BLACK;
 					break;
 				}
 				case ON:{
-					forecolour=BLACK;
+					
 					backcolour=WHITE;		
 					break;
 				}
-	}
+	};
 
 	short attrib = (backcolour << 4) | (forecolour & 0x0F);	
 
@@ -125,7 +132,7 @@ void turnOnOFFTab(state s,int i){
 void clearAllTabs(){
 	int j=0;
 	for(j=0;j<=4;j++){
-		
+		turnOnOFFTab(OFF,j);
 	}
 
 
@@ -136,25 +143,30 @@ void clearAllTabs(){
 // funcion que detecta si se hizo click sobre la barra superior.
 //Si este es el caso, se fija en que pestaña se hizo click y llama a la funcion de cambio de consola.
 void detectClickOnBar(){
-
+	
 
 	if(mouse_y==0 && mouse_x>=0){
 
+
 		if( mouse_x<8){
 			printk("seleciono con1 \n");
-			turnOnTab(1);
+			clearAllTabs();
+			turnOnOFFTab(ON,1);
 		}else if(mouse_x>10 && mouse_x<19){
 
 			printk("seleciono con2\n");
-			turnOnTab(2);
+			clearAllTabs();
+			turnOnOFFTab(ON,2);
 		}else if(mouse_x>21 && mouse_x<30){
 
 			printk("seleciono con3\n");
-			turnOnTab(3);
+			clearAllTabs();
+			turnOnOFFTab(ON,3);
 		}else if(mouse_x>32 && mouse_x<41){
 
 			printk("seleciono con4\n");
-			turnOnTab(4);
+			clearAllTabs();
+			turnOnOFFTab(ON,4);
 		}
 
 
