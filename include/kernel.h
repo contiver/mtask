@@ -6,9 +6,9 @@
 #include "tty.h"
 // TODO VER DONDE VAN ESTOS DEFINE, SEGURO ESTAN REPETIDOS!
 //constantes de la pantalla de video
-#define ABSROWS 25// filas totales, solo accesibles para el mouse
 #define NUMROWS 24//disponibles para las consolas,no incluye barra superior
 #define NUMCOLS 80
+#define ABSROWS NUMROWS+1// filas totales, solo accesibles para el mouse
 #define VIDMEM 0xB8000
 
 typedef unsigned short row[NUMCOLS];

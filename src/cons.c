@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include "apps.h"
 
 #define TABSIZE 8
 
@@ -18,8 +19,6 @@ row *vidmem = (row *) VIDMEM;
 static bool raw;
 static Tty *tty[TTYS_NUM];
 static Tty *focus;
-
-
 
 void mt_printMainBar(void){
     printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA 4 \n");
@@ -75,7 +74,6 @@ put(unsigned char ch){
             ttyp->cur_y++;
     }
     setcursor(ttyp);
-
 }
 
 /* Interfaz pública */
@@ -225,7 +223,6 @@ mt_cons_putc(char ch){
 
 void
 mt_cons_puts(const char *str){
-    Tty *ttyp = CurrentTask()->ttyp;
     while (*str)
         mt_cons_putc(*str++);
 }
@@ -281,17 +278,19 @@ mt_cons_raw(bool on){
 
 void tty_run(void *arg);
 
+/*
 void
 tty_run(void *arg){
-    shell_main(1, "shell", (int)arg);
+    shell_main(1, "shell");
 }
+*/
 
 void 
 initialize_tty(Tty * ttyp){
     int row, col;
     for(row = 0; row < NUMROWS; row++){
         for(col = 0; col < NUMCOLS; col++)
-            (ttyp->buf)[row][col] = 0;
+            (ttyp->buf)[row][col] = DEFATTR;
     }
     ttyp->data = NULL;
     ttyp->cur_attr = DEFATTR;
@@ -309,17 +308,17 @@ switch_focus(int tty_num){
 void 
 mt_setup_ttys(void){
     int i;
-    char buf[2];
-    char name[] = {'t', 't', 'y', 0, 0}; 
-    for(i = 0; i < TTYS_NUM; i++){
+    //char buf[2];
+    //char name[] = {'t', 't', 'y', 0, 0}; 
+    for(i = 0; i < 2/*TTYS_NUM*/; i++){
         tty[i] = Malloc(sizeof(Tty));
         initialize_tty(tty[i]);
         // itoa(i, buf, 10);
         /* TODO esta bien pasarle i (un int) como parametro de tty_run, cuyo
          * prototipo dice recibir void* ? */
-        // Ready(CreateTask(tty_run, 0, tty[i], strcat(name, buf), DEFAULT_PRIO));
+        Ready(CreateTask(shell_main, 0, NULL, ""/*strcat(name, buf)*/, DEFAULT_PRIO));
     }
-    focus = *tty;
+    focus = tty[0];
     // Borrar la pantalla
     mt_cons_clear();
     mt_cons_cursor(true);
