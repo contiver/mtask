@@ -46,8 +46,10 @@ static  int mouse_y=0;         //signed char
 static  int mouse_x_prev=0;         //valor previo de x
 static  int mouse_y_prev=0;         //valor previo de y 
 static bool initialPosition=true;
-//funcion que apaga mouse de la pantalla, no modifica internamente la posicion en la que esta
 
+typedef enum{OFF, ON} state;
+
+//funcion que apaga mouse de la pantalla, no modifica internamente la posicion en la que esta
 void turnOffMouse(){
 
 			volatile short * where;// posicion actual
@@ -61,18 +63,35 @@ void turnOnMouse(){
 	WriteCharacter(LIGHTRED);
 
 }
-//funcion que marca la pestaña de la consola para indicar que consola se esta empleando
-void turnOnTab(int i){
+//Si se le pasa el parametro ON ,marca la pestaña de la consola para indicar que consola se esta empleando
+//Si se le pasa el parametro OFF, desmarca la pestaña
+void turnOnOFFTab(state s,int i){
 	volatile short * where;//nueva posicion
 	unsigned char c;
 	unsigned char caracter;
 	int start, end;
 	unsigned char forecolour;
 	unsigned char backcolour;
-	forecolour=BLACK;
-	backcolour=WHITE;
-	short attrib = (backcolour << 4) | (forecolour & 0x0F);	
 	
+	
+	
+	//seccion donde se determinan los colores segun se quiere encender o apagar pestaña
+	switch (s){
+				case OFF:{
+						forecolour=WHITE;
+						backcolour=BLACK;
+					break;
+				}
+				case ON:{
+					forecolour=BLACK;
+					backcolour=WHITE;		
+					break;
+				}
+	}
+
+	short attrib = (backcolour << 4) | (forecolour & 0x0F);	
+
+	// seccion donde se determinan los limites a pintar o despintar
 	if(i==1){
 
 		start=0;
@@ -100,6 +119,20 @@ void turnOnTab(int i){
 
 
 }
+
+
+//funcion que apaga todas las pestañas
+void clearAllTabs(){
+	int j=0;
+	for(j=0;j<=4;j++){
+		
+	}
+
+
+}
+
+
+
 // funcion que detecta si se hizo click sobre la barra superior.
 //Si este es el caso, se fija en que pestaña se hizo click y llama a la funcion de cambio de consola.
 void detectClickOnBar(){
