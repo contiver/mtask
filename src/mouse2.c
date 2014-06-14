@@ -34,6 +34,8 @@ typedef unsigned int dword;
 static short  originalCharacter;
 
 void WriteCharacter( unsigned char backcolour);
+void detectClickOnBar();
+
 #define MOUSE_PRIO			10000		// Alta prioridad, para que funcione como "bottom half" de la interrupción
 #define MOUSE_BUFSIZE		32
 static char mouse_cycle=0;     //unsigned char
@@ -44,6 +46,94 @@ static  int mouse_y=0;         //signed char
 static  int mouse_x_prev=0;         //valor previo de x
 static  int mouse_y_prev=0;         //valor previo de y 
 static bool initialPosition=true;
+//funcion que apaga mouse de la pantalla, no modifica internamente la posicion en la que esta
+
+void turnOffMouse(){
+
+			volatile short * where;// posicion actual
+		     where = (volatile short *)VIDMEM + (mouse_y * 80 + mouse_x) ;
+		*where =originalCharacter;
+}
+
+
+void turnOnMouse(){
+	initialPosition=true;
+	WriteCharacter(LIGHTRED);
+
+}
+//funcion que marca la pestaña de la consola para indicar que consola se esta empleando
+void turnOnTab(int i){
+	volatile short * where;//nueva posicion
+	unsigned char c;
+	unsigned char caracter;
+	int start, end;
+	unsigned char forecolour;
+	unsigned char backcolour;
+	forecolour=BLACK;
+	backcolour=WHITE;
+	short attrib = (backcolour << 4) | (forecolour & 0x0F);	
+	
+	if(i==1){
+
+		start=0;
+		end=8;
+	}else if(i==2){
+		start=11;
+		end=19;
+
+	}else if(i==3){
+		start=22;
+		end=30;
+	}else if(i==4){
+		start=33;
+		end=41;
+	}	
+	int k;
+	for( k=start;k<end;k++){
+			     where = (volatile short *)VIDMEM + (k) ;
+				c=*where;
+				caracter=(unsigned char) (c&0x0ff);
+				*where = caracter | (attrib << 8);
+			if(k==mouse_x)
+				originalCharacter=*where;
+		}
+
+
+}
+// funcion que detecta si se hizo click sobre la barra superior.
+//Si este es el caso, se fija en que pestaña se hizo click y llama a la funcion de cambio de consola.
+void detectClickOnBar(){
+
+
+	if(mouse_y==0 && mouse_x>=0){
+
+		if( mouse_x<8){
+			printk("seleciono con1 \n");
+			turnOnTab(1);
+		}else if(mouse_x>10 && mouse_x<19){
+
+			printk("seleciono con2\n");
+			turnOnTab(2);
+		}else if(mouse_x>21 && mouse_x<30){
+
+			printk("seleciono con3\n");
+			turnOnTab(3);
+		}else if(mouse_x>32 && mouse_x<41){
+
+			printk("seleciono con4\n");
+			turnOnTab(4);
+		}
+
+
+
+
+
+
+
+	}
+}
+
+
 
 //funcion que cambia el fondo de una posicion de memoria
 void WriteCharacter(  unsigned char backcolour)
@@ -75,7 +165,7 @@ void WriteCharacter(  unsigned char backcolour)
 	if(!initialPosition){
 			*prev=originalCharacter;
 			//initialPosition=false;
-			printk("entro en no initial pos\n");
+			//printk("entro en no initial pos\n");
 		}		
 		initialPosition=false;
 			
@@ -131,7 +221,8 @@ mouse_int(unsigned irq)
 		    
 		      //precionado el boton izquierdo
 		      if (mouse_byte[0] & 0x1)
-      				printk("Left button is pressed!\n");
+      				//printk("Left button is pressed!\n");
+		      		detectClickOnBar();
 			     
 			int delta_y = mouse_byte[2];
 			if ( mouse_byte[0] & 0x20 )

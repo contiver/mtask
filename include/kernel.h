@@ -140,6 +140,8 @@ void printMainBar(void);
 
 
 void setInitialPosition(void);
+void turnOffMouse();
+void turnOnMouse();
 /* keyboard.c */ 
 
 void mt_kbd_init(void);

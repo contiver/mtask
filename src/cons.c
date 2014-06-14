@@ -25,7 +25,7 @@ static unsigned scrolls;
 
 void mt_printMainBar(void){
 		
-	 printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA 4 \n");
+	 printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA4 \n");
     
 	//printk("_________________________ \n");
 	
@@ -52,6 +52,7 @@ setcursor(void)
 static void
 scroll(void)
 {
+	turnOffMouse(); // se apaga el mouse para no alterar las lineas que se desplazan
 	int j;
 
 	for (j = 1; j < NUMROWS; j++)
@@ -59,6 +60,8 @@ scroll(void)
 	for (j = 0; j < NUMCOLS; j++)
 		vidmem[NUMROWS - 1][j] = DEFATTR;
 	scrolls++;
+
+	turnOnMouse();
 }
 
 static void
