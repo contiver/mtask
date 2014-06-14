@@ -22,9 +22,9 @@ static Tty *tty[TTYS_NUM];
 static Tty *focus;
 
 void mt_printMainBar(void){
-    printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA 4 \n");
+    printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA4 \n");
     //printk("_________________________ \n");
-    vidmem = &(vidmem[1]);//se cambia el puntero a memoria 
+    vidmem = &(vidmem[1]); //se cambia el puntero a memoria 
 }
 
 static void
@@ -63,12 +63,12 @@ scroll(void){
 static void
 put(unsigned char ch){
     Tty *ttyp = CurrentTask()->ttyp;
-    ch = (ch & 0xFF) | (ttyp->cur_attr);
+    short c = (ch & 0xFF) | (ttyp->cur_attr);
 
-    (ttyp->buf)[ttyp->cur_y][ttyp->cur_x] = ch;
-    if(focus == ttyp){
-        vidmem[ttyp->cur_y][ttyp->cur_x++] = ch;
-    }
+    (ttyp->buf)[ttyp->cur_y][ttyp->cur_x] = c;
+   // if(focus == ttyp){
+        vidmem[ttyp->cur_y][ttyp->cur_x++] = c;
+   // }
     if (ttyp->cur_x >= NUMCOLS){
         ttyp->cur_x = 0;
         if (ttyp->cur_y == NUMROWS - 1)
@@ -312,13 +312,15 @@ mt_setup_ttys(void){
     int i;
     //char buf[2];
     //char name[] = {'t', 't', 'y', 0, 0}; 
-    for(i = 0; i < 2/*TTYS_NUM*/; i++){
+    for(i = 0; i < 1/*TTYS_NUM*/; i++){
         tty[i] = Malloc(sizeof(Tty));
         initialize_tty(tty[i]);
         // itoa(i, buf, 10);
         /* TODO esta bien pasarle i (un int) como parametro de tty_run, cuyo
          * prototipo dice recibir void* ? */
-        Ready(CreateTask(shell_main, 0, NULL, ""/*strcat(name, buf)*/, DEFAULT_PRIO));
+        Task_t *t = CreateTask(shell_main, 0, NULL, ""/*strcat(name, buf)*/, DEFAULT_PRIO);
+        t->ttyp = tty[i];
+        Ready(t);
     }
     focus = tty[0];
     // Borrar la pantalla

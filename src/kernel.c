@@ -177,6 +177,7 @@ CreateTask(TaskFunc_t func, unsigned stacksize, void *arg, char *name, unsigned 
 	s->regs.eflags = INIFL;
 	s->regs.eip = (unsigned) func;
 	task->esp = (unsigned) s;
+    task->ttyp = CurrentTask()->ttyp;
 
 	return task;
 }
