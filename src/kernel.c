@@ -8,7 +8,7 @@
 #define QUANTUM			2				/* 40 mseg */
 
 
-
+extern bool firtPrint;
 Task_t * volatile mt_curr_task;			/* tarea en ejecucion */
 Task_t * volatile mt_last_task;			/* tarea anterior */
 Task_t * volatile mt_fpu_task;			/* tarea que tiene el coprocesador */
@@ -897,7 +897,6 @@ mt_main(void){
     // Habilitar interrupciones
     mt_sti();
 
-
     // Inicializar driver de teclado
     mt_kbd_init();
     //inicializa el mouse
@@ -906,14 +905,15 @@ mt_main(void){
 
     mt_printMainBar();
     // Borrar la pantalla
-    mt_setup_ttys();
     mt_cons_clear();
     mt_cons_cursor(true);
     
 	//se setea hace visible el mouse en la posicion inicial
-	 WriteCharacter();
+	WriteCharacter();
 
+	mt_setup_ttys();
     // Ejecutar primera tarea
+
     while ( true )
     {
         /*

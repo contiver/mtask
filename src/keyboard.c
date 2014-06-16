@@ -366,6 +366,7 @@ static void
 input_task(void *arg){
     unsigned char scode;
     unsigned ch;
+	int num=1;
 
     while (true)
     {
@@ -393,6 +394,20 @@ input_task(void *arg){
         {
             // Aquí deberían procesarse teclas especiales de procesamiento
             // inmediato como Fn, Alt-Fn, etc.
+			//if(ch== AF1 || ch==AF2 || ch==AF3 || ch==AF4){
+			if(ch==SF1){
+				num=1;
+			}
+			else if(ch==SF2){
+				num=2;
+			}
+			else if(ch==SF3){
+				num=3;
+			}
+			else if(ch==SF4){
+				num=4;
+			}
+			switch_focus(num);
         }
     }
 }
