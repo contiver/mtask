@@ -14,17 +14,19 @@
 #define DEFATTR ((BLACK << 12) | (LIGHTGRAY << 8))
 #define BS 0x08
 #define TTYS_NUM 7
-
+#define DEFATTR ((BLACK << 12) | (LIGHTGRAY << 8))
+ bool firtPrint=true;
 typedef unsigned short row[NUMCOLS];
 row *vidmem = (row *) VIDMEM;
 static bool raw;
 static Tty *tty[TTYS_NUM];
 static Tty *focus;
-
+static unsigned cur_x, cur_y, cur_attr = DEFATTR;
 void mt_printMainBar(void){
     printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA4 \n");
     //printk("_________________________ \n");
-    vidmem = &(vidmem[1]); //se cambia el puntero a memoria 
+    vidmem = &(vidmem[1]); //se cambia el puntero a memoria
+	firtPrint=false; 
 }
 
 static void
@@ -61,10 +63,25 @@ scroll(void){
     }
 	turnOnMouse();
 }
+//imprime directamente a pantalla en el caso de que se este imprimiendo la barra principal, es la funcion original del tp base
+void putDirectly( char ch){
 
-static void
-put(unsigned char ch){
-    Tty *ttyp = CurrentTask()->ttyp;
+	vidmem[cur_y][cur_x++] = (ch & 0xFF) | cur_attr;
+	if (cur_x >= NUMCOLS)
+	{
+		cur_x = 0;
+		if (cur_y == NUMROWS - 1)
+			scroll();
+		else
+			cur_y++;
+	}
+	//setcursor();
+}
+
+// imprime solo a tty
+
+ void putTty( char ch){
+Tty *ttyp = CurrentTask()->ttyp;
     short c = (ch & 0xFF) | (ttyp->cur_attr);
 
     (ttyp->buf)[ttyp->cur_y][ttyp->cur_x] = c;
@@ -79,7 +96,16 @@ put(unsigned char ch){
             ttyp->cur_y++;
     }
     setcursor(ttyp);
+
 }
+static void
+put(unsigned char ch){
+   if(firtPrint==true){
+	putDirectly(ch);
+	}
+	else
+		putTty(ch);
+	}
 
 /* Interfaz pública */
 
@@ -282,12 +308,11 @@ mt_cons_raw(bool on){
 
 void tty_run(void *arg);
 
-/*
 void
 tty_run(void *arg){
-    shell_main(1, "shell");
+    char *s[] = { "shell", NULL };
+    shell_main(1, s);
 }
-*/
 
 void 
 initialize_tty(Tty * ttyp){
@@ -296,6 +321,7 @@ initialize_tty(Tty * ttyp){
         for(col = 0; col < NUMCOLS; col++)
             (ttyp->buf)[row][col] = DEFATTR;
     }
+    ttyp->key_mq = mt_new_kbd_queue();
     ttyp->data = NULL;
     ttyp->cur_attr = DEFATTR;
     ttyp->scrolls = 0;
@@ -306,6 +332,7 @@ void
 switch_focus(int tty_num){
     /* TODO: necesito un atomic() aca? */
     focus = tty[tty_num];
+    set_key_mq(focus->key_mq);
     mt_reload_cons();
 }
 
@@ -314,18 +341,19 @@ mt_setup_ttys(void){
     int i;
     //char buf[2];
     //char name[] = {'t', 't', 'y', 0, 0}; 
-    for(i = 0; i < 2/*TTYS_NUM*/; i++){
+    for(i = 0; i < 4/*TTYS_NUM*/; i++){
         tty[i] = Malloc(sizeof(Tty));
         initialize_tty(tty[i]);
         // itoa(i, buf, 10);
         /* TODO esta bien pasarle i (un int) como parametro de tty_run, cuyo
          * prototipo dice recibir void* ? */
-        Task_t *t = CreateTask(shell_main, 0, NULL, ""/*strcat(name, buf)*/, DEFAULT_PRIO);
+        Task_t *t = CreateTask(tty_run, 0, NULL, ""/*strcat(name, buf)*/, DEFAULT_PRIO);
         t->ttyp = tty[i];
         Ready(t);
     }
     focus = tty[0];
+    set_key_mq(focus->key_mq);
     // Borrar la pantalla
-    mt_cons_clear();
+    //mt_cons_clear();
     mt_cons_cursor(true);
 }

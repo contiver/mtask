@@ -2,7 +2,6 @@
 #define MTASK_H_INCLUDED
 
 #include "lib.h"
-//#include "kernel.h"
 
 #define MIN_PRIO		0
 #define DEFAULT_PRIO	50
@@ -20,24 +19,12 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-/* TODO borrar despues, codigo repetido!
- */
-#define NUMROWS 24//disponibles para las consolas,no incluye barra superior
-#define NUMCOLS 80
-typedef struct{
-    void *key_mq;
-    unsigned short buf[NUMROWS][NUMCOLS];
-    void * data;
-    unsigned cur_x, cur_y, cur_attr;
-    unsigned scrolls;
-   // bool cursor_on;
-    int cursor_on;
-} Tty;
-
 typedef enum { false, true } bool;
 
-typedef enum 
-{ 
+typedef struct MsgQueue_t MsgQueue_t;
+#include "tty.h"
+
+typedef enum { 
 	TaskSuspended, 
 	TaskReady, 
 	TaskCurrent, 
@@ -46,8 +33,7 @@ typedef enum
 	TaskSending, 
 	TaskReceiving, 
 	TaskTerminated 
-} 
-TaskState_t;
+} TaskState_t;
 
 typedef struct Task_t Task_t;
 
@@ -225,8 +211,7 @@ unsigned			AvailPipe(Pipe_t *p);
 
 /* Colas de mensajes */
 
-typedef struct
-{
+struct MsgQueue_t{
 	Mutex_t *		mutex_get;
 	Mutex_t *		mutex_put;
 	Semaphore_t *	sem_get;
@@ -236,8 +221,7 @@ typedef struct
 	char *			head;
 	char *			tail;
 	char *			end;
-}
-MsgQueue_t;
+} ;
 
 MsgQueue_t *		CreateMsgQueue(char *name, unsigned msg_max, unsigned msg_size, bool serialized_get, bool serialized_put);
 void				DeleteMsgQueue(MsgQueue_t *mq);
