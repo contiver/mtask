@@ -282,12 +282,11 @@ mt_cons_raw(bool on){
 
 void tty_run(void *arg);
 
-/*
 void
 tty_run(void *arg){
-    shell_main(1, "shell");
+    char *s[] = { "shell", NULL };
+    shell_main(1, s);
 }
-*/
 
 void 
 initialize_tty(Tty * ttyp){
@@ -296,6 +295,7 @@ initialize_tty(Tty * ttyp){
         for(col = 0; col < NUMCOLS; col++)
             (ttyp->buf)[row][col] = DEFATTR;
     }
+    ttyp->key_mq = mt_new_kbd_queue();
     ttyp->data = NULL;
     ttyp->cur_attr = DEFATTR;
     ttyp->scrolls = 0;
@@ -306,6 +306,7 @@ void
 switch_focus(int tty_num){
     /* TODO: necesito un atomic() aca? */
     focus = tty[tty_num];
+    set_key_mq(focus->key_mq);
     mt_reload_cons();
 }
 
@@ -314,17 +315,18 @@ mt_setup_ttys(void){
     int i;
     //char buf[2];
     //char name[] = {'t', 't', 'y', 0, 0}; 
-    for(i = 0; i < 2/*TTYS_NUM*/; i++){
+    for(i = 0; i < 4/*TTYS_NUM*/; i++){
         tty[i] = Malloc(sizeof(Tty));
         initialize_tty(tty[i]);
         // itoa(i, buf, 10);
         /* TODO esta bien pasarle i (un int) como parametro de tty_run, cuyo
          * prototipo dice recibir void* ? */
-        Task_t *t = CreateTask(shell_main, 0, NULL, ""/*strcat(name, buf)*/, DEFAULT_PRIO);
+        Task_t *t = CreateTask(tty_run, 0, NULL, ""/*strcat(name, buf)*/, DEFAULT_PRIO);
         t->ttyp = tty[i];
         Ready(t);
     }
     focus = tty[0];
+    set_key_mq(focus->key_mq);
     // Borrar la pantalla
     mt_cons_clear();
     mt_cons_cursor(true);

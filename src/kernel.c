@@ -897,16 +897,17 @@ mt_main(void){
     // Habilitar interrupciones
     mt_sti();
 
-    // Borrar la pantalla
-    mt_setup_ttys();
-    mt_cons_clear();
-    mt_cons_cursor(true);
 
     // Inicializar driver de teclado
     mt_kbd_init();
     //inicializa el mouse
     mt_mouse_init();
     //se carga la barra principal
+
+    // Borrar la pantalla
+    mt_setup_ttys();
+    mt_cons_clear();
+    mt_cons_cursor(true);
     
     mt_printMainBar();
 	//se setea hace visible el mouse en la posicion inicial
