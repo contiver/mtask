@@ -220,6 +220,11 @@ static char numpad_map[] = { 'H', 'Y', 'A', 'B', 'D', 'C', 'V', 'U', 'G', 'S', '
 
 static MsgQueue_t *scan_mq, *key_mq;
 
+void
+set_key_mq(MsgQueue_t *kmq){
+    key_mq = kmq;
+}
+
 static void 
 kbdint(unsigned irq){
 	// Interrupción de teclado. Por ahora tomamos todo lo que viene como si fueran
@@ -402,10 +407,9 @@ mt_kbd_getch_timed(unsigned *c, unsigned timeout)
 }
 
 bool 
-mt_kbd_getch(unsigned *c)
-{
+mt_kbd_getch(unsigned *c){
 	*c = 0;
-	return GetMsgQueue(key_mq, c);
+	return GetMsgQueue(mt_curr_task->ttyp->key_mq, c);
 }
 
 void
@@ -420,6 +424,11 @@ mt_kbd_init(void)
 	mt_enable_irq(KBDINT);
 }
 
+MsgQueue_t*
+mt_new_kbd_queue(void){
+    return CreateMsgQueue("Input", KBDBUFSIZE, 1, true, false);
+}
+
 const char *
 mt_kbd_getlayout(void)
 {
@@ -432,8 +441,7 @@ mt_kbd_setlayout(const char *name){
     const char *p;
 
     for ( n = 0 ; (p = names[n]) ; n++ )
-        if ( strcmp(name, p) == 0 )
-        {
+        if ( strcmp(name, p) == 0 ){
             kbd_name = p;
             keymap = keymaps[n];
             return true;
