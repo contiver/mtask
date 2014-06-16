@@ -14,17 +14,19 @@
 #define DEFATTR ((BLACK << 12) | (LIGHTGRAY << 8))
 #define BS 0x08
 #define TTYS_NUM 7
-
+#define DEFATTR ((BLACK << 12) | (LIGHTGRAY << 8))
+ bool firtPrint=true;
 typedef unsigned short row[NUMCOLS];
 row *vidmem = (row *) VIDMEM;
 static bool raw;
 static Tty *tty[TTYS_NUM];
 static Tty *focus;
-
+static unsigned cur_x, cur_y, cur_attr = DEFATTR;
 void mt_printMainBar(void){
     printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA4 \n");
     //printk("_________________________ \n");
-    vidmem = &(vidmem[1]); //se cambia el puntero a memoria 
+    vidmem = &(vidmem[1]); //se cambia el puntero a memoria
+	firtPrint=false; 
 }
 
 static void
@@ -61,10 +63,25 @@ scroll(void){
     }
 	turnOnMouse();
 }
+//imprime directamente a pantalla en el caso de que se este imprimiendo la barra principal, es la funcion original del tp base
+void putDirectly( char ch){
 
-static void
-put(unsigned char ch){
-    Tty *ttyp = CurrentTask()->ttyp;
+	vidmem[cur_y][cur_x++] = (ch & 0xFF) | cur_attr;
+	if (cur_x >= NUMCOLS)
+	{
+		cur_x = 0;
+		if (cur_y == NUMROWS - 1)
+			scroll();
+		else
+			cur_y++;
+	}
+	//setcursor();
+}
+
+// imprime solo a tty
+
+ void putTty( char ch){
+Tty *ttyp = CurrentTask()->ttyp;
     short c = (ch & 0xFF) | (ttyp->cur_attr);
 
     (ttyp->buf)[ttyp->cur_y][ttyp->cur_x] = c;
@@ -79,7 +96,16 @@ put(unsigned char ch){
             ttyp->cur_y++;
     }
     setcursor(ttyp);
+
 }
+static void
+put(unsigned char ch){
+   if(firtPrint==true){
+	putDirectly(ch);
+	}
+	else
+		putTty(ch);
+	}
 
 /* Interfaz pública */
 
@@ -326,6 +352,6 @@ mt_setup_ttys(void){
     }
     focus = tty[0];
     // Borrar la pantalla
-    mt_cons_clear();
+    //mt_cons_clear();
     mt_cons_cursor(true);
 }
