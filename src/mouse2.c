@@ -45,12 +45,11 @@ static  int mouse_x_prev=0;         //valor previo de x
 static  int mouse_y_prev=0;         //valor previo de y 
 static bool initialPosition=true;
 
-typedef enum{OFF, ON} state;
+
 
 
 void WriteCharacter( unsigned char backcolour);
-void detectClickOnBar();
-void clearAllTabs();
+
 void turnOnOFFTab(state s,int i);
 
 
@@ -130,8 +129,8 @@ void turnOnOFFTab(state s,int i){
 
 //funcion que apaga todas las pestañas
 void clearAllTabs(){
-	int j=0;
-	for(j=0;j<=4;j++){
+	int j=1;
+	for(j=1;j<=4;j++){
 		turnOnOFFTab(OFF,j);
 	}
 

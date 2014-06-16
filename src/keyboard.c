@@ -366,10 +366,11 @@ static void
 input_task(void *arg){
     unsigned char scode;
     unsigned ch;
-	int num=1;
+	int num=-1;
 
     while (true)
     {
+	num=-1;
         if ( !GetMsgQueue(scan_mq, &scode) )
             continue;
 
@@ -394,20 +395,24 @@ input_task(void *arg){
         {
             // Aquí deberían procesarse teclas especiales de procesamiento
             // inmediato como Fn, Alt-Fn, etc.
-			//if(ch== AF1 || ch==AF2 || ch==AF3 || ch==AF4){
-			if(ch==SF1){
+			
+			if(ch==AF1){
 				num=1;
 			}
-			else if(ch==SF2){
+			else if(ch==AF2){
 				num=2;
 			}
-			else if(ch==SF3){
+			else if(ch==AF3){
 				num=3;
 			}
-			else if(ch==SF4){
+			else if(ch==AF4){
 				num=4;
 			}
-			switch_focus(num);
+			if(num!=-1){
+				clearAllTabs();
+				switch_focus(num);
+				turnOnOFFTab(ON,num);
+			}
         }
     }
 }

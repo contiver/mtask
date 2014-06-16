@@ -137,16 +137,17 @@ void mt_cons_nl(void);
 void mt_cons_tab(void);
 void mt_cons_bs(void);
 
-
+typedef enum{OFF, ON} state;
 //mouse
 
 void mt_mouse_init(void);
 void printMainBar(void);
-
+void clearAllTabs();
 
 void setInitialPosition(void);
 void turnOffMouse();
 void turnOnMouse();
+void turnOnOFFTab(state s,int i);
 /* keyboard.c */ 
 
 void mt_kbd_init(void);
