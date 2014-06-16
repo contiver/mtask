@@ -31,10 +31,12 @@ static void
 setcursor(Tty * ttyp){
     if (ttyp->cursor_on){
         unsigned off = (ttyp->cur_y+1) * NUMCOLS + ttyp->cur_x;
-        outb(CRT_ADDR, CRT_CURSOR_HIGH);
-        outb(CRT_DATA, off >> 8);
-        outb(CRT_ADDR, CRT_CURSOR_LOW);
-        outb(CRT_DATA, off);
+        if(focus == ttyp){
+            outb(CRT_ADDR, CRT_CURSOR_HIGH);
+            outb(CRT_DATA, off >> 8);
+            outb(CRT_ADDR, CRT_CURSOR_LOW);
+            outb(CRT_DATA, off);
+        }
     }
 }
 
@@ -66,9 +68,9 @@ put(unsigned char ch){
     short c = (ch & 0xFF) | (ttyp->cur_attr);
 
     (ttyp->buf)[ttyp->cur_y][ttyp->cur_x] = c;
-   // if(focus == ttyp){
+    if(focus == ttyp){
         vidmem[ttyp->cur_y][ttyp->cur_x++] = c;
-   // }
+    }
     if (ttyp->cur_x >= NUMCOLS){
         ttyp->cur_x = 0;
         if (ttyp->cur_y == NUMROWS - 1)
@@ -312,7 +314,7 @@ mt_setup_ttys(void){
     int i;
     //char buf[2];
     //char name[] = {'t', 't', 'y', 0, 0}; 
-    for(i = 0; i < 1/*TTYS_NUM*/; i++){
+    for(i = 0; i < 2/*TTYS_NUM*/; i++){
         tty[i] = Malloc(sizeof(Tty));
         initialize_tty(tty[i]);
         // itoa(i, buf, 10);
