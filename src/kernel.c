@@ -904,12 +904,12 @@ mt_main(void){
     mt_mouse_init();
     //se carga la barra principal
 
+    mt_printMainBar();
     // Borrar la pantalla
     mt_setup_ttys();
     mt_cons_clear();
     mt_cons_cursor(true);
     
-    mt_printMainBar();
 	//se setea hace visible el mouse en la posicion inicial
 	 WriteCharacter();
 

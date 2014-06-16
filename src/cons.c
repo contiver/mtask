@@ -22,8 +22,12 @@ static Tty *tty[TTYS_NUM];
 static Tty *focus;
 
 void mt_printMainBar(void){
-    printk("CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA4 \n");
-    //printk("_________________________ \n");
+    char *s = "CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA4 \n";
+    unsigned short *p1 = &vidmem[0][0];
+    while (*s != 0){
+        short c = (*s & 0xFF) | DEFATTR;
+        *p1++ = *s++;
+    }
     vidmem = &(vidmem[1]); //se cambia el puntero a memoria 
 }
 
@@ -89,6 +93,7 @@ mt_reload_cons(){
     unsigned short *p2 = &vidmem[NUMROWS][0];
     unsigned short *p3 = &(focus->buf)[0][0];
 
+
     while (p1 < p2)
         *p1++ = *p3++;
     /* TODO cambiar este gotoxy luego al valor correcto,
@@ -128,7 +133,8 @@ mt_cons_clreol(void){
 
 void
 mt_cons_clreom(void){
-    Tty *ttyp = CurrentTask()->ttyp; unsigned short *p1 = &vidmem[ttyp->cur_y][ttyp->cur_x];
+    Tty *ttyp = CurrentTask()->ttyp;
+    unsigned short *p1 = &vidmem[ttyp->cur_y][ttyp->cur_x];
     unsigned short *p2 = &vidmem[NUMROWS][0];
     unsigned short *p3 = &(ttyp->buf)[ttyp->cur_y][ttyp->cur_x];
 
