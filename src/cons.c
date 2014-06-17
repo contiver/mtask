@@ -13,7 +13,7 @@
 
 #define DEFATTR ((BLACK << 12) | (LIGHTGRAY << 8))
 #define BS 0x08
-#define TTYS_NUM 7
+#define TTYS_NUM 4
 
 typedef unsigned short row[NUMCOLS];
 row *vidmem = (row *) VIDMEM;
@@ -21,14 +21,14 @@ static bool raw;
 static Tty *tty[TTYS_NUM];
 static Tty *focus;
 
-void 
-mt_printMainBar(void){
-    char *s = " CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA4 ";
+static void 
+print_tabs(void){
+    char *s = "CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA4 ";
     unsigned short *p1 = &vidmem[0][0];
 
-    while ( *s ){
+    while ( *s )
         *p1++ = (*s++ & 0xFF) | DEFATTR;
-    }
+
     vidmem = &(vidmem[1]); //se cambia el puntero a memoria 
 }
 
@@ -47,7 +47,7 @@ setcursor(Tty * ttyp){
 
 static void
 scroll(void){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     int j;
 	turnOffMouse(); // se apaga el mouse para no alterar las lineas que se desplazan
 
@@ -69,8 +69,8 @@ scroll(void){
 
 static void
 put(unsigned char ch){
-    Tty *ttyp = CurrentTask()->ttyp;
-    short c = (ch & 0xFF) | (ttyp->cur_attr);
+    Tty *ttyp = mt_curr_task->ttyp;
+    unsigned short c = (ch & 0xFF) | (ttyp->cur_attr);
 
     (ttyp->buf)[ttyp->cur_y][ttyp->cur_x] = c;
     if(focus == ttyp){
@@ -96,17 +96,13 @@ mt_reload_cons(){
 
     while (p1 < p2)
         *p1++ = *p3++;
-    /* TODO cambiar este gotoxy luego al valor correcto,
-     * probablemente sea necesario llevar constancia del x e y
-     * dentro de la estructura Tty
-     */
     mt_cons_gotoxy(0, 0);
+    setcursor(focus);
 }
 
 void
 mt_cons_clear(void){
-
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     unsigned short *p1 = &vidmem[0][0];
     unsigned short *p2 = &vidmem[NUMROWS][0];
     unsigned short *p3 = &(ttyp->buf)[0][0];
@@ -120,7 +116,7 @@ mt_cons_clear(void){
 
 void
 mt_cons_clreol(void){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     unsigned short *p1 = &vidmem[ttyp->cur_y][ttyp->cur_x];
     unsigned short *p2 = &vidmem[ttyp->cur_y + 1][0];
     unsigned short *p3 = &(ttyp->buf)[ttyp->cur_y][ttyp->cur_x];
@@ -133,7 +129,8 @@ mt_cons_clreol(void){
 
 void
 mt_cons_clreom(void){
-    Tty *ttyp = CurrentTask()->ttyp; unsigned short *p1 = &vidmem[ttyp->cur_y][ttyp->cur_x];
+    Tty *ttyp = mt_curr_task->ttyp; 
+    unsigned short *p1 = &vidmem[ttyp->cur_y][ttyp->cur_x];
     unsigned short *p2 = &vidmem[NUMROWS][0];
     unsigned short *p3 = &(ttyp->buf)[ttyp->cur_y][ttyp->cur_x];
 
@@ -155,20 +152,19 @@ mt_cons_ncols(void){
 
 unsigned
 mt_cons_nscrolls(void){
-    Tty *ttyp = CurrentTask()->ttyp;
-    return ttyp->scrolls;
+    return mt_curr_task->ttyp->scrolls;
 }
 
 void
 mt_cons_getxy(unsigned *x, unsigned *y){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     *x = ttyp->cur_x;
     *y = ttyp->cur_y;
 }
 
 void
 mt_cons_gotoxy(unsigned x, unsigned y){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     if (y < NUMROWS && x < NUMCOLS){
         ttyp->cur_x = x;
         ttyp->cur_y = y;
@@ -178,20 +174,20 @@ mt_cons_gotoxy(unsigned x, unsigned y){
 
 void
 mt_cons_setattr(unsigned fg, unsigned bg){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     ttyp->cur_attr = ((fg & 0xF) << 8) | ((bg & 0xF) << 12);
 }
 
 void
 mt_cons_getattr(unsigned *fg, unsigned *bg){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     *fg = (ttyp->cur_attr >> 8) & 0xF;
     *bg = (ttyp->cur_attr >> 12) & 0xF;
 }
 
 bool
 mt_cons_cursor(bool on){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     bool prev = ttyp->cursor_on;
     unsigned start = on ? 14 : 1, end = on ? 15 : 0;
 
@@ -238,14 +234,14 @@ mt_cons_puts(const char *str){
 
 void
 mt_cons_cr(void){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     ttyp->cur_x = 0;
     setcursor(ttyp);
 }
 
 void
 mt_cons_nl(void){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     if (ttyp->cur_y == NUMROWS - 1)
         scroll();
     else
@@ -255,15 +251,14 @@ mt_cons_nl(void){
 
 void
 mt_cons_tab(void){
-    Tty *ttyp = CurrentTask()->ttyp;
-    unsigned nspace = TABSIZE - (ttyp->cur_x % TABSIZE);
+    unsigned nspace = TABSIZE - (mt_curr_task->ttyp->cur_x % TABSIZE);
     while (nspace--)
         put(' ');
 }
 
 void
 mt_cons_bs(void){
-    Tty *ttyp = CurrentTask()->ttyp;
+    Tty *ttyp = mt_curr_task->ttyp;
     if (ttyp->cur_x) ttyp->cur_x--;
     else if (ttyp->cur_y){
         ttyp->cur_y--;
@@ -286,6 +281,9 @@ mt_cons_raw(bool on){
  ******************************************************************************/
 
 void tty_run(void *arg);
+void initialize_tty(Tty *ttyp);
+void switch_focus(int tty_num);
+void mt_setup_ttys(void);
 
 void
 tty_run(void *arg){
@@ -301,38 +299,36 @@ initialize_tty(Tty * ttyp){
             (ttyp->buf)[row][col] = DEFATTR;
     }
     ttyp->key_mq = mt_new_kbd_queue();
-    ttyp->data = NULL;
     ttyp->cur_attr = DEFATTR;
+    ttyp->cur_x = 0;
+    ttyp->cur_y = 0;
     ttyp->scrolls = 0;
     ttyp->cursor_on = true;
 }
 
 void
 switch_focus(int tty_num){
-    /* TODO: necesito un atomic() aca? */
+    Atomic();
     focus = tty[tty_num];
     set_key_mq(focus->key_mq);
     mt_reload_cons();
+    Unatomic();
 }
 
 void 
 mt_setup_ttys(void){
+    Atomic();
     int i;
-    //char buf[2];
-    //char name[] = {'t', 't', 'y', 0, 0}; 
-    for(i = 0; i < 4/*TTYS_NUM*/; i++){
+    for(i = 0; i < TTYS_NUM; i++){
         tty[i] = Malloc(sizeof(Tty));
         initialize_tty(tty[i]);
-        // itoa(i, buf, 10);
-        /* TODO esta bien pasarle i (un int) como parametro de tty_run, cuyo
-         * prototipo dice recibir void* ? */
-        Task_t *t = CreateTask(tty_run, 0, NULL, ""/*strcat(name, buf)*/, DEFAULT_PRIO);
+        Task_t *t = CreateTask(tty_run, 0, NULL, "", DEFAULT_PRIO);
         t->ttyp = tty[i];
         Ready(t);
     }
-    focus = tty[0];
-    set_key_mq(focus->key_mq);
-    // Borrar la pantalla
-    mt_cons_clear();
-    mt_cons_cursor(true);
+    print_tabs();
+    switch_focus(0);
+    Unatomic();
+    //mt_cons_clear();
+    //mt_cons_cursor(true);
 }

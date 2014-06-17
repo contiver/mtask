@@ -899,20 +899,15 @@ mt_main(void){
 
     // Inicializar driver de teclado
     mt_kbd_init();
-    //inicializa el mouse
+
+    // Inicializar driver de mouse
     mt_mouse_init();
-    //se carga la barra principal
 
-    mt_printMainBar();
-    // Borrar la pantalla
-    mt_cons_clear();
-    mt_cons_cursor(true);
-    
-	//se setea hace visible el mouse en la posicion inicial
-	WriteCharacter();
-
+    // Inicializar ttys
 	mt_setup_ttys();
-    // Ejecutar primera tarea
+
+	//se hace visible el mouse en la posicion inicial
+	WriteCharacter();
 
     while ( true )
     {
