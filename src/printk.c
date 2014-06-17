@@ -8,8 +8,7 @@ vprintk(const char *fmt, va_list args){
 
     n = vsprintf(buf, fmt, args);
     if ( n > 0 )
-        for ( i = 0 ; i < n ; i++ )
-        {
+        for ( i = 0 ; i < n ; i++ ){
             if ( (c = buf[i]) == '\n' )
                 mt_cons_putc('\r');
             mt_cons_putc(c);
@@ -44,4 +43,3 @@ cprintk(unsigned fg, unsigned bg, char *fmt, ...){
     mt_cons_setattr(fgi, bgi);
     RestoreInts();
 }
-

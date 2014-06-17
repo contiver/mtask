@@ -74,8 +74,9 @@ put(unsigned char ch){
 
     (ttyp->buf)[ttyp->cur_y][ttyp->cur_x] = c;
     if(focus == ttyp){
-        vidmem[ttyp->cur_y][ttyp->cur_x++] = c;
+        vidmem[ttyp->cur_y][ttyp->cur_x] = c;
     }
+    ttyp->cur_x++;
     if (ttyp->cur_x >= NUMCOLS){
         ttyp->cur_x = 0;
         if (ttyp->cur_y == NUMROWS - 1)
