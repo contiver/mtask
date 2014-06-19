@@ -154,8 +154,7 @@ a Ready().
 */
 
 Task_t *
-CreateTask(TaskFunc_t func, unsigned stacksize, void *arg, char *name, unsigned priority)
-{
+CreateTask(TaskFunc_t func, unsigned stacksize, void *arg, char *name, unsigned priority){
 	Task_t *task;
 	InitialStack_t *s;
 
@@ -164,22 +163,22 @@ CreateTask(TaskFunc_t func, unsigned stacksize, void *arg, char *name, unsigned 
 	task->name = task->send_queue.name = StrDup(name);
 	task->priority = priority;
 
-	/* alocar stack */
-	stacksize &= ~3;					// redondear a multiplos de 4
-	if ( stacksize < MIN_STACK )		// garantizar tamaño mínimo
-		stacksize = MIN_STACK;
-	task->stack = Malloc(stacksize);	// malloc alinea adecuadamente
+    /* alocar stack */
+    stacksize &= ~3;					// redondear a multiplos de 4
+    if ( stacksize < MIN_STACK )		// garantizar tamaño mínimo
+        stacksize = MIN_STACK;
+    task->stack = Malloc(stacksize);	// malloc alinea adecuadamente
 
-	/* inicializar stack */
-	s = (InitialStack_t *)(task->stack + stacksize) - 1;
-	s->arg = arg;
-	s->retaddr = Exit;				/* direccion de retorno de func() */
-	s->regs.eflags = INIFL;
-	s->regs.eip = (unsigned) func;
-	task->esp = (unsigned) s;
-    task->ttyp = CurrentTask()->ttyp;
+    /* inicializar stack */
+    s = (InitialStack_t *)(task->stack + stacksize) - 1;
+    s->arg = arg;
+    s->retaddr = Exit;				/* direccion de retorno de func() */
+    s->regs.eflags = INIFL;
+    s->regs.eip = (unsigned) func;
+    task->esp = (unsigned) s;
+    task->ttyp = mt_curr_task->ttyp;
 
-	return task;
+    return task;
 }
 
 /*

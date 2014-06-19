@@ -37,16 +37,14 @@ typedef enum {
 
 typedef struct Task_t Task_t;
 
-typedef struct
-{
+typedef struct{
 	char *			name;
 	Task_t *		head;
 	Task_t *		tail;
 }
 TaskQueue_t;
 
-struct Task_t
-{
+struct Task_t{
 	char *			name;
 	TaskState_t		state;
 	unsigned		priority;
@@ -120,8 +118,7 @@ void				Panic(char *msg);
 
 /* Semáforos */
 
-typedef struct
-{
+typedef struct{
 	unsigned		value;
 	TaskQueue_t *	queue;
 }
