@@ -327,7 +327,7 @@ camino_main(void){
     while ( c != 's' && c != 'S' ); 
 
     mprint(OFFSET, MSGLINE + 3, "Esperando que terminen los autos...");
-    while ( ((GlobalVars *)mt_curr_task->data)->ncars )
+    while ( gv->ncars )
         Yield();
 
     DeleteTask(ctl);
