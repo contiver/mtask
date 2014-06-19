@@ -127,31 +127,23 @@ void clearAllTabs(){
 // funcion que detecta si se hizo click sobre la barra superior.
 //Si este es el caso, se fija en que pestaña se hizo click y llama a la funcion de cambio de consola.
 void detectClickOnBar(){
-    if(mouse_y ==0 && mouse_x >= 0){
-        int tabNum;
+    if(mouse_y == 0 && mouse_x >= 0){
+        int tabNum = -1;
 
         if( mouse_x < 8){
             tabNum = 0;
-            printk("seleciono con1 \n");
-            clearAllTabs();
-            turnOnOFFTab(ON,1);
         }else if(mouse_x > 10 && mouse_x < 19){
             tabNum = 1;
-            printk("seleciono con2\n");
-            clearAllTabs();
-            turnOnOFFTab(ON,2);
         }else if(mouse_x>21 && mouse_x<30){
             tabNum=2;
-            printk("seleciono con3\n");
-            clearAllTabs();
-            turnOnOFFTab(ON,3);
         }else if(mouse_x>32 && mouse_x<41){
             tabNum=3;
-            printk("seleciono con4\n");
-            clearAllTabs();
-            turnOnOFFTab(ON,4);
         }
-        switch_focus(tabNum);
+        if(tabNum != -1){
+            clearAllTabs();
+            turnOnOFFTab(ON,tabNum+1);
+            switch_focus(tabNum);
+        }
     }
 }
 

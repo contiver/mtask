@@ -24,7 +24,7 @@ static Tty *focus;
 static void 
 print_tabs(void){
     char *s = "CONSOLA1 | CONSOLA2 | CONSOLA3 | CONSOLA4 ";
-    unsigned short *p1 = &vidmem[0][0];
+    unsigned short *p1 = VIDMEM;
 
     while ( *s )
         *p1++ = (*s++ & 0xFF) | DEFATTR;
@@ -97,7 +97,7 @@ mt_reload_cons(){
 
     while (p1 < p2)
         *p1++ = *p3++;
-    mt_cons_gotoxy(0, 0);
+    //mt_cons_gotoxy(0, 0);
     setcursor(focus);
 }
 
@@ -293,7 +293,7 @@ tty_run(void *arg){
 }
 
 void 
-initialize_tty(Tty * ttyp){
+initialize_tty(Tty *ttyp){
     int row, col;
     for(row = 0; row < NUMROWS; row++){
         for(col = 0; col < NUMCOLS; col++)

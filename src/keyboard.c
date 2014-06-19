@@ -366,11 +366,11 @@ static void
 input_task(void *arg){
     unsigned char scode;
     unsigned ch;
-	int num=-1;
+	int tty_num=-1;
 
     while (true)
     {
-	num=-1;
+	tty_num=-1;
         if ( !GetMsgQueue(scan_mq, &scode) )
             continue;
 
@@ -390,29 +390,28 @@ input_task(void *arg){
             PutMsgQueue(key_mq, &c);
             c = numpad_map[ch - HOME];
             PutMsgQueue(key_mq, &c);
-        }
-        else
-        {
+        }else{
             // Aquí deberían procesarse teclas especiales de procesamiento
             // inmediato como Fn, Alt-Fn, etc.
-			
-			if(ch==AF1){
-				num=1;
-			}
-			else if(ch==AF2){
-				num=2;
-			}
-			else if(ch==AF3){
-				num=3;
-			}
-			else if(ch==AF4){
-				num=4;
-			}
-			if(num!=-1){
-				clearAllTabs();
-				switch_focus(num);
-				turnOnOFFTab(ON,num);
-			}
+            switch( ch ){
+                case AF1:
+                    tty_num = 0;
+                    break;
+                case AF2:
+                    tty_num = 1;
+                    break;
+                case AF3:
+                    tty_num = 2;
+                    break;
+                case AF4:
+                    tty_num = 3;
+                    break;
+            }
+            if(tty_num != -1){
+                clearAllTabs();
+                turnOnOFFTab(ON, tty_num+1);
+                switch_focus(tty_num);
+            }
         }
     }
 }
@@ -420,28 +419,26 @@ input_task(void *arg){
 // Interfaz
 
 bool 
-mt_kbd_getch_timed(unsigned *c, unsigned timeout)
-{
-	*c = 0;
-	return GetMsgQueueTimed(key_mq, c, timeout);
+mt_kbd_getch_timed(unsigned *c, unsigned timeout){
+    *c = 0;
+    return GetMsgQueueTimed(key_mq, c, timeout);
 }
 
 bool 
 mt_kbd_getch(unsigned *c){
-	*c = 0;
-	return GetMsgQueue(mt_curr_task->ttyp->key_mq, c);
+    *c = 0;
+    return GetMsgQueue(mt_curr_task->ttyp->key_mq, c);
 }
 
 void
-mt_kbd_init(void)
-{
-	keymap = keymaps[0];
-	kbd_name = names[0];
-	scan_mq = CreateMsgQueue("Scan code", KBDBUFSIZE, 1, false, false);
-	key_mq = CreateMsgQueue("Input key", KBDBUFSIZE, 1, true, false);
-	Ready(CreateTask(input_task, 0, NULL, "Input task", INPUTPRIO));
-	mt_set_int_handler(KBDINT, kbdint);
-	mt_enable_irq(KBDINT);
+mt_kbd_init(void){
+    keymap = keymaps[0];
+    kbd_name = names[0];
+    scan_mq = CreateMsgQueue("Scan code", KBDBUFSIZE, 1, false, false);
+    key_mq = CreateMsgQueue("Input key", KBDBUFSIZE, 1, true, false);
+    Ready(CreateTask(input_task, 0, NULL, "Input task", INPUTPRIO));
+    mt_set_int_handler(KBDINT, kbdint);
+    mt_enable_irq(KBDINT);
 }
 
 MsgQueue_t*
@@ -450,9 +447,8 @@ mt_new_kbd_queue(void){
 }
 
 const char *
-mt_kbd_getlayout(void)
-{
-	return kbd_name;
+mt_kbd_getlayout(void){
+    return kbd_name;
 }
 
 bool
@@ -470,7 +466,6 @@ mt_kbd_setlayout(const char *name){
 }
 
 const char **
-mt_kbd_layouts(void)
-{
-	return names;
+mt_kbd_layouts(void){
+    return names;
 }
