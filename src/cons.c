@@ -275,17 +275,6 @@ mt_cons_raw(bool on){
     return prev;
 }
 
-/******************************************************************************
- * ============================================================================
- * ====================== Reubicar este código luego! =========================
- * ============================================================================
- ******************************************************************************/
-
-void tty_run(void *arg);
-void initialize_tty(Tty *ttyp);
-void switch_focus(int tty_num);
-void mt_setup_ttys(void);
-
 void
 tty_run(void *arg){
     char *s[] = { "shell", NULL };
@@ -330,6 +319,4 @@ mt_setup_ttys(void){
     print_tabs();
     switch_focus(0);
     Unatomic();
-    //mt_cons_clear();
-    //mt_cons_cursor(true);
 }

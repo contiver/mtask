@@ -49,7 +49,7 @@ shell_main(int argc, char **argv){
         if ( strcmp(args[0], "help") == 0 ){
             printk("Comandos internos:\n");
             printk("\thelp\n");
-            printk("\texit\n");
+//            printk("\texit\n");
             printk("\treboot\n");
             printk("Aplicaciones:\n");\
                 for ( cp = cmdtab ; cp->name ; cp++ )
@@ -57,10 +57,10 @@ shell_main(int argc, char **argv){
             continue;
         }
 
-        if ( strcmp(args[0], "exit") == 0 ){
-            mt_cons_setattr(fg, bg);
-            return nargs > 1 ? atoi(args[1]) : 0;
-        }
+//        if ( strcmp(args[0], "exit") == 0 ){
+ //           mt_cons_setattr(fg, bg);
+  //          return nargs > 1 ? atoi(args[1]) : 0;
+   //     }
 
         if ( strcmp(args[0], "reboot") == 0 ){
             *(short *) 0x472 = 0x1234;

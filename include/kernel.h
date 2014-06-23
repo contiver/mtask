@@ -126,7 +126,12 @@ void mt_cons_putc(char ch);
 void mt_cons_puts(const char *str);
 
 void putDirectly( char ch);
- void putTty( char ch);
+void putTty( char ch);
+
+void tty_run(void *arg);
+void initialize_tty(Tty *ttyp);
+void switch_focus(int tty_num);
+void mt_setup_ttys(void);
 
 // funcion que imprime la barra superior en la que se encuentra los botones para seleccionar las consolas con el mouse. 
 //tambien se encarga de mover el puntero al comienzo de la memoria de vide(vidmem) para que la barra superior quede fija arriba.
