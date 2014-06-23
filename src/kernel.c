@@ -908,6 +908,8 @@ mt_main(void){
 	//se hace visible el mouse en la posicion inicial
 	WriteCharacter();
 
+	//se marca la pestaña de la primer consola que es la primera que esta abierta
+	turnOnOFFTab(ON,1);
     while ( true )
     {
         /*

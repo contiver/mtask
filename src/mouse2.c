@@ -2,7 +2,6 @@
 
 #include <kernel.h>
 #include <mtask.h>
-//falla al mover el mouse a la izquierda, se mueve 255 posiciones de golpe siempre
 
 // Definiciones del controlador de mouse PS/2
 #define MOUSE				0x60
@@ -142,7 +141,10 @@ void detectClickOnBar(){
         if(tabNum != -1){
             clearAllTabs();
             turnOnOFFTab(ON,tabNum+1);
+            turnOffMouse();
             switch_focus(tabNum);
+            turnOnMouse();
+
         }
     }
 }

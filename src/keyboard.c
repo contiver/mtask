@@ -410,7 +410,9 @@ input_task(void *arg){
             if(tty_num != -1){
                 clearAllTabs();
                 turnOnOFFTab(ON, tty_num+1);
+                 turnOffMouse();
                 switch_focus(tty_num);
+                turnOnMouse();
             }
         }
     }
